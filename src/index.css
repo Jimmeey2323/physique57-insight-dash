@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,6 +7,7 @@
 
 @layer base {
   :root {
+    /* Light theme (default) */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -36,21 +38,53 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Theme colors */
+    --theme-primary: 263 70% 50%;
+    --theme-secondary: 262 83% 58%;
+    --theme-accent: 343 100% 62%;
+    --theme-gradient-start: 263 70% 50%;
+    --theme-gradient-end: 343 100% 62%;
+  }
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+  /* Theme variations */
+  .theme-purple {
+    --theme-primary: 263 70% 50%;
+    --theme-secondary: 262 83% 58%;
+    --theme-accent: 343 100% 62%;
+    --theme-gradient-start: 263 70% 50%;
+    --theme-gradient-end: 343 100% 62%;
+  }
 
-    --sidebar-primary: 240 5.9% 10%;
+  .theme-blue {
+    --theme-primary: 221 83% 53%;
+    --theme-secondary: 213 94% 68%;
+    --theme-accent: 204 100% 63%;
+    --theme-gradient-start: 221 83% 53%;
+    --theme-gradient-end: 204 100% 63%;
+  }
 
-    --sidebar-primary-foreground: 0 0% 98%;
+  .theme-emerald {
+    --theme-primary: 158 64% 52%;
+    --theme-secondary: 160 84% 39%;
+    --theme-accent: 142 76% 36%;
+    --theme-gradient-start: 158 64% 52%;
+    --theme-gradient-end: 142 76% 36%;
+  }
 
-    --sidebar-accent: 240 4.8% 95.9%;
+  .theme-rose {
+    --theme-primary: 330 81% 60%;
+    --theme-secondary: 346 77% 49%;
+    --theme-accent: 351 83% 74%;
+    --theme-gradient-start: 330 81% 60%;
+    --theme-gradient-end: 351 83% 74%;
+  }
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  .theme-amber {
+    --theme-primary: 45 93% 47%;
+    --theme-secondary: 48 96% 53%;
+    --theme-accent: 43 96% 56%;
+    --theme-gradient-start: 45 93% 47%;
+    --theme-gradient-end: 43 96% 56%;
   }
 
   .dark {
@@ -81,14 +115,46 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark.theme-purple {
+    --theme-primary: 263 70% 60%;
+    --theme-secondary: 262 83% 68%;
+    --theme-accent: 343 100% 72%;
+    --theme-gradient-start: 263 70% 60%;
+    --theme-gradient-end: 343 100% 72%;
+  }
+
+  .dark.theme-blue {
+    --theme-primary: 221 83% 63%;
+    --theme-secondary: 213 94% 78%;
+    --theme-accent: 204 100% 73%;
+    --theme-gradient-start: 221 83% 63%;
+    --theme-gradient-end: 204 100% 73%;
+  }
+
+  .dark.theme-emerald {
+    --theme-primary: 158 64% 62%;
+    --theme-secondary: 160 84% 49%;
+    --theme-accent: 142 76% 46%;
+    --theme-gradient-start: 158 64% 62%;
+    --theme-gradient-end: 142 76% 46%;
+  }
+
+  .dark.theme-rose {
+    --theme-primary: 330 81% 70%;
+    --theme-secondary: 346 77% 59%;
+    --theme-accent: 351 83% 84%;
+    --theme-gradient-start: 330 81% 70%;
+    --theme-gradient-end: 351 83% 84%;
+  }
+
+  .dark.theme-amber {
+    --theme-primary: 45 93% 57%;
+    --theme-secondary: 48 96% 63%;
+    --theme-accent: 43 96% 66%;
+    --theme-gradient-start: 45 93% 57%;
+    --theme-gradient-end: 43 96% 66%;
   }
 }
 
@@ -99,5 +165,23 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .theme-gradient {
+    background: linear-gradient(135deg, hsl(var(--theme-gradient-start)), hsl(var(--theme-gradient-end)));
+  }
+  
+  .theme-text-primary {
+    color: hsl(var(--theme-primary));
+  }
+  
+  .theme-bg-primary {
+    background-color: hsl(var(--theme-primary));
+  }
+  
+  .theme-border-primary {
+    border-color: hsl(var(--theme-primary));
   }
 }
