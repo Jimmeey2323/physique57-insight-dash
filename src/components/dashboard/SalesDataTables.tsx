@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,14 @@ import { SalesData } from '@/hooks/useGoogleSheets';
 
 interface SalesDataTablesProps {
   data: SalesData[];
+}
+
+interface TableColumn {
+  key: string;
+  label: string;
+  align: 'left' | 'center' | 'right';
+  format?: (value: number) => string;
+  isGrowth?: boolean;
 }
 
 const SalesDataTables = ({ data }: SalesDataTablesProps) => {
@@ -124,42 +131,42 @@ const SalesDataTables = ({ data }: SalesDataTablesProps) => {
       title: "Product Performance",
       data: productData,
       columns: [
-        { key: 'product', label: 'Product', align: 'left' },
-        { key: 'grossRevenue', label: 'Gross Revenue', align: 'center', format: formatCurrency },
-        { key: 'vat', label: 'VAT', align: 'center', format: formatCurrency },
-        { key: 'netRevenue', label: 'Net Revenue', align: 'center', format: formatCurrency },
-        { key: 'units', label: 'Units', align: 'center' },
-        { key: 'transactions', label: 'Transactions', align: 'center' },
-        { key: 'atv', label: 'ATV', align: 'center', format: formatCurrency },
-        { key: 'uniqueMembers', label: 'Members', align: 'center' },
-        { key: 'growth', label: 'Growth', align: 'center', isGrowth: true }
-      ]
+        { key: 'product', label: 'Product', align: 'left' as const },
+        { key: 'grossRevenue', label: 'Gross Revenue', align: 'center' as const, format: formatCurrency },
+        { key: 'vat', label: 'VAT', align: 'center' as const, format: formatCurrency },
+        { key: 'netRevenue', label: 'Net Revenue', align: 'center' as const, format: formatCurrency },
+        { key: 'units', label: 'Units', align: 'center' as const },
+        { key: 'transactions', label: 'Transactions', align: 'center' as const },
+        { key: 'atv', label: 'ATV', align: 'center' as const, format: formatCurrency },
+        { key: 'uniqueMembers', label: 'Members', align: 'center' as const },
+        { key: 'growth', label: 'Growth', align: 'center' as const, isGrowth: true }
+      ] as TableColumn[]
     },
     {
       title: "Category Performance",
       data: categoryData,
       columns: [
-        { key: 'category', label: 'Category', align: 'left' },
-        { key: 'grossRevenue', label: 'Gross Revenue', align: 'center', format: formatCurrency },
-        { key: 'vat', label: 'VAT', align: 'center', format: formatCurrency },
-        { key: 'netRevenue', label: 'Net Revenue', align: 'center', format: formatCurrency },
-        { key: 'units', label: 'Units', align: 'center' },
-        { key: 'transactions', label: 'Transactions', align: 'center' },
-        { key: 'atv', label: 'ATV', align: 'center', format: formatCurrency },
-        { key: 'uniqueMembers', label: 'Members', align: 'center' },
-        { key: 'growth', label: 'Growth', align: 'center', isGrowth: true }
-      ]
+        { key: 'category', label: 'Category', align: 'left' as const },
+        { key: 'grossRevenue', label: 'Gross Revenue', align: 'center' as const, format: formatCurrency },
+        { key: 'vat', label: 'VAT', align: 'center' as const, format: formatCurrency },
+        { key: 'netRevenue', label: 'Net Revenue', align: 'center' as const, format: formatCurrency },
+        { key: 'units', label: 'Units', align: 'center' as const },
+        { key: 'transactions', label: 'Transactions', align: 'center' as const },
+        { key: 'atv', label: 'ATV', align: 'center' as const, format: formatCurrency },
+        { key: 'uniqueMembers', label: 'Members', align: 'center' as const },
+        { key: 'growth', label: 'Growth', align: 'center' as const, isGrowth: true }
+      ] as TableColumn[]
     },
     {
       title: "Category Comparison",
       data: comparisonData,
       columns: [
-        { key: 'category', label: 'Category', align: 'left' },
-        { key: 'grossRevenue', label: 'Revenue', align: 'center', format: formatCurrency },
-        { key: 'transactions', label: 'Transactions', align: 'center' },
-        { key: 'uniqueMembers', label: 'Members', align: 'center' },
-        { key: 'atv', label: 'ATV', align: 'center', format: formatCurrency }
-      ]
+        { key: 'category', label: 'Category', align: 'left' as const },
+        { key: 'grossRevenue', label: 'Revenue', align: 'center' as const, format: formatCurrency },
+        { key: 'transactions', label: 'Transactions', align: 'center' as const },
+        { key: 'uniqueMembers', label: 'Members', align: 'center' as const },
+        { key: 'atv', label: 'ATV', align: 'center' as const, format: formatCurrency }
+      ] as TableColumn[]
     }
   ];
 
