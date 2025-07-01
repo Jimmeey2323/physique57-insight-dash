@@ -689,7 +689,7 @@ export const processData = (
                   // Combine data for studio view
                   if (!studioData[location]) {
                     studioData[location] = {
-                      teacherName: 'All Teachers',
+                      teacherName: ,
                       location,
                       period,
                       newClients: 0,
