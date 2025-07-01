@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import FileUploader from '@/components/FileUploader';
@@ -27,27 +28,23 @@ const STORAGE_KEYS = {
   LOCATIONS: 'studio-stats-locations',
   TEACHERS: 'studio-stats-teachers',
   PERIODS: 'studio-stats-periods',
-  // We'll use session storage for raw data due to its potentially large size
   HAS_RAW_DATA: 'studio-stats-has-raw-data'
 };
 
 // Storage utilities
 const storageUtils = {
-  // Save data to localStorage with error handling
   saveToStorage: (key: string, data: any) => {
     try {
       localStorage.setItem(key, JSON.stringify(data));
       return true;
     } catch (error) {
       console.error(`Error saving to storage for key ${key}:`, error);
-      // If it's a QuotaExceededError, notify the user
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
         toast.error('Storage limit exceeded. Some data might not be saved between sessions.');
       }
       return false;
     }
   },
-  // Load data from localStorage with error handling
   loadFromStorage: (key: string) => {
     try {
       const data = localStorage.getItem(key);
@@ -57,7 +54,6 @@ const storageUtils = {
       return null;
     }
   },
-  // Clear specific localStorage keys
   clearStorage: (keys: string[]) => {
     keys.forEach(key => {
       try {
@@ -68,6 +64,7 @@ const storageUtils = {
     });
   }
 };
+
 const Index = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -96,21 +93,21 @@ const Index = () => {
     }
   });
 
-  // Add state for managing filters
+  // Global filter state
   const [selectedFilters, setSelectedFilters] = useState({
     period: [] as string[],
     teacher: [] as string[],
     location: [] as string[]
   });
+  const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(false);
+
+  // Legacy filter state for backward compatibility
   const [activeFilters, setActiveFilters] = useState({
     location: '',
     teacher: '',
     period: '',
     search: ''
   });
-
-  // Add state for filter collapse
-  const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
 
   // Load saved data from localStorage on component mount
   useEffect(() => {
@@ -120,6 +117,7 @@ const Index = () => {
     const savedTeachers = storageUtils.loadFromStorage(STORAGE_KEYS.TEACHERS);
     const savedPeriods = storageUtils.loadFromStorage(STORAGE_KEYS.PERIODS);
     const hasRawData = localStorage.getItem(STORAGE_KEYS.HAS_RAW_DATA) === 'true';
+
     if (savedProcessedData) {
       setProcessedData(savedProcessedData);
       setResultsVisible(true);
@@ -137,13 +135,12 @@ const Index = () => {
       setPeriods(savedPeriods);
     }
 
-    // If we have processed results but no raw data available, show a notice
     if (savedProcessedData && savedProcessedData.length > 0 && hasRawData) {
       setResultsVisible(true);
     }
   }, []);
 
-  // Save processed data, filtered data, and metadata to localStorage when they change
+  // Save processed data and metadata to localStorage when they change
   useEffect(() => {
     if (processedData.length > 0) {
       storageUtils.saveToStorage(STORAGE_KEYS.PROCESSED_DATA, processedData);
@@ -161,36 +158,30 @@ const Index = () => {
       storageUtils.saveToStorage(STORAGE_KEYS.PERIODS, periods);
     }
 
-    // Set a flag that we have raw data, but don't store the actual raw data
     if (rawData.newClientData.length > 0 || rawData.bookingsData.length > 0) {
       localStorage.setItem(STORAGE_KEYS.HAS_RAW_DATA, 'true');
     }
   }, [processedData, filteredData, locations, teachers, periods, rawData]);
 
-  // Update progress
   const updateProgress = useCallback((progressData: ProcessingProgress) => {
     setProgress(progressData.progress);
     setCurrentStep(progressData.currentStep);
   }, []);
 
-  // Handle file upload
   const handleFilesAdded = useCallback((newFiles: File[]) => {
     setFiles(prevFiles => [...prevFiles, ...newFiles]);
   }, []);
 
-  // Remove a file
   const handleRemoveFile = useCallback((index: number) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   }, []);
 
-  // Process files
   const handleProcessFiles = useCallback(async () => {
     if (files.length === 0) {
       toast.error('Please upload files first');
       return;
     }
 
-    // Categorize files
     const categorized = categorizeFiles(files);
     if (!categorized.new) {
       toast.error('Missing New client file. Please upload a file with "new" in the name');
@@ -201,7 +192,7 @@ const Index = () => {
       return;
     }
 
-    // Clear previous data before processing new files
+    // Clear previous data
     setProcessedData([]);
     setFilteredData([]);
     setLocations([]);
@@ -220,7 +211,6 @@ const Index = () => {
       }
     });
 
-    // Clear localStorage when processing new files
     storageUtils.clearStorage(Object.values(STORAGE_KEYS));
     setIsProcessing(true);
     updateProgress({
@@ -229,7 +219,6 @@ const Index = () => {
     });
     
     try {
-      // Parse CSV files
       updateProgress({
         progress: 10,
         currentStep: 'Parsing CSV files...'
@@ -237,15 +226,11 @@ const Index = () => {
       const newFileResult = await parseCSV(categorized.new);
       const bookingsFileResult = await parseCSV(categorized.bookings);
 
-      // Check if payments file exists
-      let salesFileResult = {
-        data: []
-      };
+      let salesFileResult = { data: [] };
       if (categorized.payments) {
         salesFileResult = await parseCSV(categorized.payments);
       }
 
-      // Save raw data for the Raw Data View
       const initialRawData = {
         newClientData: newFileResult.data || [],
         bookingsData: bookingsFileResult.data || [],
@@ -260,21 +245,23 @@ const Index = () => {
       };
       setRawData(initialRawData);
 
-      // Process data
       updateProgress({
         progress: 30,
         currentStep: 'Processing data...'
       });
-      const result = await processData(newFileResult.data || [], bookingsFileResult.data || [], salesFileResult.data || [], updateProgress);
+      const result = await processData(
+        newFileResult.data || [], 
+        bookingsFileResult.data || [], 
+        salesFileResult.data || [], 
+        updateProgress
+      );
 
-      // Update state with processed data
       setProcessedData(result.processedData || []);
       setFilteredData(result.processedData || []);
       setLocations(result.locations || []);
       setTeachers(result.teachers || []);
       setPeriods(result.periods || []);
 
-      // Update raw data processing results with the results from processing
       setRawData(prev => ({
         ...prev,
         processingResults: {
@@ -286,13 +273,11 @@ const Index = () => {
         }
       }));
 
-      // Show success and finish processing - ensure state updates are complete
       updateProgress({
         progress: 100,
         currentStep: 'Finalizing...'
       });
       
-      // Use a shorter timeout and ensure the results are visible immediately
       setTimeout(() => {
         setIsProcessing(false);
         setResultsVisible(true);
@@ -306,12 +291,10 @@ const Index = () => {
     }
   }, [files, updateProgress]);
 
-  // Handle filter changes from the new FilterBar component
   const handleFilteredDataChange = useCallback((newFilteredData: ProcessedTeacherData[]) => {
     setFilteredData(newFilteredData);
   }, []);
 
-  // Handle filter update from the new FilterBar component
   const handleFilterUpdate = useCallback((filters: {
     period: string[];
     teacher: string[];
@@ -320,7 +303,6 @@ const Index = () => {
     setSelectedFilters(filters);
   }, []);
 
-  // Handle filter changes (for old components that still use this interface)
   const handleFilterChange = useCallback((filters: {
     location?: string;
     teacher?: string;
@@ -336,30 +318,28 @@ const Index = () => {
     setActiveFilters(newFilters);
     let filtered = [...processedData];
 
-    // Filter by location
     if (newFilters.location && newFilters.location !== 'all-locations') {
       filtered = filtered.filter(item => item.location === newFilters.location);
     }
 
-    // Filter by teacher
     if (newFilters.teacher && newFilters.teacher !== 'all-teachers') {
       filtered = filtered.filter(item => item.teacherName === newFilters.teacher);
     }
 
-    // Filter by period
     if (newFilters.period && newFilters.period !== 'all-periods') {
       filtered = filtered.filter(item => item.period === newFilters.period);
     }
 
-    // Filter by search (teacher name)
     if (newFilters.search) {
       const searchLower = newFilters.search.toLowerCase();
-      filtered = filtered.filter(item => item.teacherName && item.teacherName.toLowerCase().includes(searchLower) || item.location && item.location.toLowerCase().includes(searchLower));
+      filtered = filtered.filter(item => 
+        item.teacherName && item.teacherName.toLowerCase().includes(searchLower) || 
+        item.location && item.location.toLowerCase().includes(searchLower)
+      );
     }
     setFilteredData(filtered);
   }, [processedData]);
 
-  // Apply fade-in animation on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       document.getElementById('container')?.classList.remove('opacity-0');
@@ -367,15 +347,13 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Check if any filters are active
-  const hasActiveFilters = Object.values(activeFilters).some(Boolean);
+  const hasActiveFilters = Object.values(activeFilters).some(Boolean) || 
+    selectedFilters.period.length > 0 || 
+    selectedFilters.teacher.length > 0 || 
+    selectedFilters.location.length > 0;
 
-  // Clear saved data and reset to upload screen
   const handleResetApp = useCallback(() => {
-    // Clear localStorage
     storageUtils.clearStorage(Object.values(STORAGE_KEYS));
-
-    // Reset state
     setResultsVisible(false);
     setProcessedData([]);
     setFilteredData([]);
@@ -402,6 +380,7 @@ const Index = () => {
     });
     toast.success('Application reset. You can upload new files');
   }, []);
+
   return (
     <div className="min-h-screen">
       {!resultsVisible ? (
@@ -411,7 +390,12 @@ const Index = () => {
           {files.length > 0 && (
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-white/20 p-6 z-50">
               <div className="max-w-4xl mx-auto">
-                <FileList files={files} onRemove={handleRemoveFile} onProcessFiles={handleProcessFiles} fileTypes={getFileTypes()} />
+                <FileList 
+                  files={files} 
+                  onRemove={handleRemoveFile} 
+                  onProcessFiles={handleProcessFiles} 
+                  fileTypes={getFileTypes()} 
+                />
               </div>
             </div>
           )}
@@ -431,12 +415,35 @@ const Index = () => {
                   <button onClick={handleResetApp} className="text-sm text-destructive hover:underline">
                     Reset data
                   </button>
-                  <button onClick={() => {
-                    setResultsVisible(false);
-                  }} className="text-sm text-primary hover:underline">
+                  <button onClick={() => setResultsVisible(false)} className="text-sm text-primary hover:underline">
                     Process new files
                   </button>
                 </div>
+              </div>
+
+              {/* Global Filter Bar */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Global Filters</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    {isFiltersCollapsed ? 'Show Filters' : 'Hide Filters'}
+                    {isFiltersCollapsed ? <ChevronDown className="h-4 w-4 ml-2" /> : <ChevronUp className="h-4 w-4 ml-2" />}
+                  </Button>
+                </div>
+                
+                {!isFiltersCollapsed && (
+                  <FilterBar 
+                    data={processedData} 
+                    onFilterChange={handleFilteredDataChange} 
+                    selectedFilters={selectedFilters} 
+                    onFilterUpdate={handleFilterUpdate} 
+                  />
+                )}
               </div>
               
               <Collapsible open={isInsightsOpen} onOpenChange={setIsInsightsOpen} className="w-full space-y-2">
@@ -488,56 +495,14 @@ const Index = () => {
                 </TabsList>
                 
                 <TabsContent value="analytics" className="mt-0">
-                  <div className="space-y-6">
-                    {/* Quick filter buttons - always visible */}
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        variant={activeFilters.location === '' ? 'default' : 'outline'} 
-                        size="sm"
-                        onClick={() => handleFilterChange({ location: '' })}
-                      >
-                        All Locations
-                      </Button>
-                      {locations.slice(0, 5).map(location => (
-                        <Button 
-                          key={location}
-                          variant={activeFilters.location === location ? 'default' : 'outline'} 
-                          size="sm"
-                          onClick={() => handleFilterChange({ location })}
-                        >
-                          {location}
-                        </Button>
-                      ))}
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setIsFiltersCollapsed(!isFiltersCollapsed)}
-                        className="ml-auto"
-                      >
-                        <Filter className="h-4 w-4 mr-2" />
-                        {isFiltersCollapsed ? 'Show Filters' : 'Hide Filters'}
-                      </Button>
-                    </div>
-
-                    {/* Collapsible advanced filters */}
-                    {!isFiltersCollapsed && (
-                      <FilterBar 
-                        data={processedData} 
-                        onFilterChange={handleFilteredDataChange} 
-                        selectedFilters={selectedFilters} 
-                        onFilterUpdate={handleFilterUpdate} 
-                      />
-                    )}
-                    
-                    <ResultsTable 
-                      data={filteredData} 
-                      locations={locations} 
-                      isLoading={false} 
-                      viewMode={viewMode} 
-                      dataMode={dataMode} 
-                      onFilterChange={handleFilterChange} 
-                    />
-                  </div>
+                  <ResultsTable 
+                    data={filteredData} 
+                    locations={locations} 
+                    isLoading={false} 
+                    viewMode={viewMode} 
+                    dataMode={dataMode} 
+                    onFilterChange={handleFilterChange} 
+                  />
                 </TabsContent>
 
                 <TabsContent value="monthly-metrics" className="mt-0">
@@ -582,7 +547,6 @@ const Index = () => {
         </div>
       )}
 
-      {/* Processing Loader */}
       <ProcessingLoader isProcessing={isProcessing} progress={progress} currentStep={currentStep} />
     </div>
   );
