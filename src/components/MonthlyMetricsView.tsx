@@ -7,12 +7,12 @@ import { ProcessedTeacherData } from '@/utils/dataProcessor';
 import { TrendingUp, Users, Calendar, Target, Award, DollarSign, BarChart3, PieChart, Activity, Zap, Sparkles, Crown, Star } from 'lucide-react';
 import { safeToFixed, safeFormatCurrency } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
 interface MonthlyMetricsViewProps {
   data: ProcessedTeacherData[];
 }
-
-const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
+const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
+  data
+}) => {
   const [selectedMetric, setSelectedMetric] = useState('visits');
 
   // Group data by teacher and month with proper null checks
@@ -134,90 +134,77 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
       totalRevenue: 0,
       totalClasses: 0
     });
-
     return {
       ...totals,
-      avgRetentionRate: totals.totalNewMembers > 0 ? (totals.totalRetained / totals.totalNewMembers) * 100 : 0,
-      avgConversionRate: totals.totalNewMembers > 0 ? (totals.totalConverted / totals.totalNewMembers) * 100 : 0
+      avgRetentionRate: totals.totalNewMembers > 0 ? totals.totalRetained / totals.totalNewMembers * 100 : 0,
+      avgConversionRate: totals.totalNewMembers > 0 ? totals.totalConverted / totals.totalNewMembers * 100 : 0
     };
   }, [data]);
 
   // Metric configurations
-  const metrics = [
-    { 
-      key: 'visits', 
-      label: 'Total Visits', 
-      icon: <Activity className="h-4 w-4" />,
-      color: 'from-blue-500 to-blue-600',
-      formatter: (value: number) => value.toLocaleString()
-    },
-    { 
-      key: 'newMembers', 
-      label: 'New Members', 
-      icon: <Users className="h-4 w-4" />,
-      color: 'from-green-500 to-emerald-600',
-      formatter: (value: number) => value.toLocaleString()
-    },
-    { 
-      key: 'retained', 
-      label: 'Retained Members', 
-      icon: <TrendingUp className="h-4 w-4" />,
-      color: 'from-teal-500 to-cyan-600',
-      formatter: (value: number) => value.toLocaleString()
-    },
-    { 
-      key: 'converted', 
-      label: 'Converted Members', 
-      icon: <Target className="h-4 w-4" />,
-      color: 'from-purple-500 to-violet-600',
-      formatter: (value: number) => value.toLocaleString()
-    },
-    { 
-      key: 'revenue', 
-      label: 'Revenue', 
-      icon: <DollarSign className="h-4 w-4" />,
-      color: 'from-amber-500 to-orange-500',
-      formatter: (value: number) => safeFormatCurrency(value)
-    },
-    { 
-      key: 'retentionRate', 
-      label: 'Retention Rate (%)', 
-      icon: <BarChart3 className="h-4 w-4" />,
-      color: 'from-indigo-500 to-blue-600',
-      formatter: (value: number) => `${safeToFixed(value, 1)}%`
-    },
-    { 
-      key: 'conversionRate', 
-      label: 'Conversion Rate (%)', 
-      icon: <PieChart className="h-4 w-4" />,
-      color: 'from-rose-500 to-pink-600',
-      formatter: (value: number) => `${safeToFixed(value, 1)}%`
-    },
-    { 
-      key: 'classes', 
-      label: 'Classes Taught', 
-      icon: <Award className="h-4 w-4" />,
-      color: 'from-violet-500 to-purple-600',
-      formatter: (value: number) => value.toLocaleString()
-    }
-  ];
-
+  const metrics = [{
+    key: 'visits',
+    label: 'Total Visits',
+    icon: <Activity className="h-4 w-4" />,
+    color: 'from-blue-500 to-blue-600',
+    formatter: (value: number) => value.toLocaleString()
+  }, {
+    key: 'newMembers',
+    label: 'New Members',
+    icon: <Users className="h-4 w-4" />,
+    color: 'from-green-500 to-emerald-600',
+    formatter: (value: number) => value.toLocaleString()
+  }, {
+    key: 'retained',
+    label: 'Retained Members',
+    icon: <TrendingUp className="h-4 w-4" />,
+    color: 'from-teal-500 to-cyan-600',
+    formatter: (value: number) => value.toLocaleString()
+  }, {
+    key: 'converted',
+    label: 'Converted Members',
+    icon: <Target className="h-4 w-4" />,
+    color: 'from-purple-500 to-violet-600',
+    formatter: (value: number) => value.toLocaleString()
+  }, {
+    key: 'revenue',
+    label: 'Revenue',
+    icon: <DollarSign className="h-4 w-4" />,
+    color: 'from-amber-500 to-orange-500',
+    formatter: (value: number) => safeFormatCurrency(value)
+  }, {
+    key: 'retentionRate',
+    label: 'Retention Rate (%)',
+    icon: <BarChart3 className="h-4 w-4" />,
+    color: 'from-indigo-500 to-blue-600',
+    formatter: (value: number) => `${safeToFixed(value, 1)}%`
+  }, {
+    key: 'conversionRate',
+    label: 'Conversion Rate (%)',
+    icon: <PieChart className="h-4 w-4" />,
+    color: 'from-rose-500 to-pink-600',
+    formatter: (value: number) => `${safeToFixed(value, 1)}%`
+  }, {
+    key: 'classes',
+    label: 'Classes Taught',
+    icon: <Award className="h-4 w-4" />,
+    color: 'from-violet-500 to-purple-600',
+    formatter: (value: number) => value.toLocaleString()
+  }];
   const selectedMetricConfig = metrics.find(m => m.key === selectedMetric) || metrics[0];
 
   // Render metric table
   const renderMetricTable = () => {
     const totals = calculateTotals(selectedMetric);
     const totalSum = totals.reduce((sum, t) => sum + (t?.total || 0), 0);
-    
-    return (
-      <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden rounded-2xl">
+    return <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden rounded-2xl">
         <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-white/20">
           <CardTitle className="flex items-center gap-3">
             <div className={`p-3 rounded-xl bg-gradient-to-r ${selectedMetricConfig.color} shadow-lg`}>
               {selectedMetricConfig.icon}
             </div>
             <div>
-              <div className="text-xl font-bold flex items-center gap-2">
+              <div className="text-xl font-bold flex items-center gap-2 text-white">
                 {selectedMetricConfig.label}
                 <Sparkles className="h-5 w-5 text-blue-400 animate-pulse" />
               </div>
@@ -233,22 +220,20 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
           <ScrollArea className="h-[500px]">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:bg-gradient-to-r hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 border-b border-white/20">
-                  <TableHead className="text-white font-bold px-6 bg-slate-900 sticky left-0 z-10 min-w-[180px] border-r border-white/20">
+                <TableRow className="">
+                  <TableHead className="text-white font-bold text-center min-w-[140px] px-4">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
                       Teacher
                     </div>
                   </TableHead>
-                  {allMonths.map(month => (
-                    <TableHead key={month} className="text-white font-bold text-center min-w-[140px] px-4">
+                  {allMonths.map(month => <TableHead key={month} className="text-white font-bold text-center min-w-[140px] px-4">
                       <div className="flex items-center justify-center gap-2">
                         <Calendar className="h-4 w-4" />
                         {month}
                       </div>
-                    </TableHead>
-                  ))}
-                  <TableHead className="text-white font-bold text-center min-w-[140px] bg-slate-700/50 border-l border-white/30 sticky right-0 z-10">
+                    </TableHead>)}
+                  <TableHead className="text-white font-bold text-center min-w-[140px] px-4">
                     <div className="flex items-center justify-center gap-2">
                       <Zap className="h-4 w-4" />
                       Total
@@ -258,18 +243,14 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
               </TableHeader>
               <TableBody>
                 {teachers.map((teacher, index) => {
-                  const teacherTotal = allMonths.reduce((sum, month) => {
-                    const teacherData = monthlyData[teacher];
-                    const monthData = teacherData && teacherData[month];
-                    return sum + (monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0);
-                  }, 0);
-                  
-                  return (
-                    <TableRow 
-                      key={teacher} 
-                      className="animate-fade-in border-b border-slate-200/30 hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-white/90 transition-all duration-300" 
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
+                const teacherTotal = allMonths.reduce((sum, month) => {
+                  const teacherData = monthlyData[teacher];
+                  const monthData = teacherData && teacherData[month];
+                  return sum + (monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0);
+                }, 0);
+                return <TableRow key={teacher} className="animate-fade-in border-b border-slate-200/30 hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-white/90 transition-all duration-300" style={{
+                  animationDelay: `${index * 50}ms`
+                }}>
                       <TableCell className="font-bold sticky left-0 z-10 bg-white/95 backdrop-blur-sm border-r border-slate-200/30 min-w-[180px] text-slate-800 px-6">
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${selectedMetricConfig.color} shadow-sm`}></div>
@@ -277,28 +258,22 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
                         </div>
                       </TableCell>
                       {allMonths.map(month => {
-                        const teacherData = monthlyData[teacher];
-                        const monthData = teacherData && teacherData[month];
-                        const value = monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0;
-                        
-                        return (
-                          <TableCell key={month} className="text-center min-w-[140px] font-semibold text-slate-800 px-4">
-                            <Badge 
-                              className={`bg-gradient-to-r ${selectedMetricConfig.color} text-white shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1 font-bold`}
-                            >
+                    const teacherData = monthlyData[teacher];
+                    const monthData = teacherData && teacherData[month];
+                    const value = monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0;
+                    return <TableCell key={month} className="text-center min-w-[140px] font-semibold text-slate-800 px-4">
+                            <Badge className={`bg-gradient-to-r ${selectedMetricConfig.color} text-white shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1 font-bold`}>
                               {selectedMetricConfig.formatter(value)}
                             </Badge>
-                          </TableCell>
-                        );
-                      })}
+                          </TableCell>;
+                  })}
                       <TableCell className="text-center font-bold min-w-[140px] bg-slate-50/80 border-l border-slate-200/50 text-slate-800 sticky right-0 z-10">
                         <Badge className="bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg px-3 py-1 font-bold">
                           {selectedMetricConfig.formatter(teacherTotal)}
                         </Badge>
                       </TableCell>
-                    </TableRow>
-                  );
-                })}
+                    </TableRow>;
+              })}
               </TableBody>
               <TableFooter>
                 <TableRow className="border-t-2 border-slate-300/50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
@@ -308,13 +283,14 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
                       <span className="font-bold">Total</span>
                     </div>
                   </TableCell>
-                  {totals.map(({ month, total }) => (
-                    <TableCell key={month} className="text-center font-bold text-white min-w-[140px] px-4">
+                  {totals.map(({
+                  month,
+                  total
+                }) => <TableCell key={month} className="text-center font-bold text-white min-w-[140px] px-4">
                       <span className="font-bold text-lg">
                         {selectedMetricConfig.formatter(total)}
                       </span>
-                    </TableCell>
-                  ))}
+                    </TableCell>)}
                   <TableCell className="text-center font-bold text-white min-w-[140px] bg-slate-600/20 border-l border-white/30 sticky right-0 z-20">
                     <span className="font-bold text-lg">
                       {selectedMetricConfig.formatter(totalSum)}
@@ -325,25 +301,20 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
             </Table>
           </ScrollArea>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   };
 
   // Early return if no data
   if (!data || !Array.isArray(data) || data.length === 0) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <Card className="animate-fade-in bg-white/90 backdrop-blur-xl border border-white/40 shadow-luxury rounded-2xl">
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">No data available for monthly metrics view.</p>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden">
@@ -359,7 +330,9 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{ animationDelay: '100ms' }}>
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
+        animationDelay: '100ms'
+      }}>
           <CardHeader className="pb-3 bg-gradient-to-r from-green-100/80 to-emerald-50/80 border-b border-green-200/50">
             <CardTitle className="text-sm flex items-center gap-2 text-green-700">
               <Users className="h-4 w-4" />
@@ -372,7 +345,9 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{ animationDelay: '200ms' }}>
+        <Card className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
+        animationDelay: '200ms'
+      }}>
           <CardHeader className="pb-3 bg-gradient-to-r from-purple-100/80 to-violet-50/80 border-b border-purple-200/50">
             <CardTitle className="text-sm flex items-center gap-2 text-purple-700">
               <Target className="h-4 w-4" />
@@ -391,7 +366,9 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{ animationDelay: '300ms' }}>
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
+        animationDelay: '300ms'
+      }}>
           <CardHeader className="pb-3 bg-gradient-to-r from-amber-100/80 to-orange-50/80 border-b border-amber-200/50">
             <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
               <DollarSign className="h-4 w-4" />
@@ -421,18 +398,12 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
         <CardContent className="p-6">
           <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
             <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2 bg-slate-100/80 backdrop-blur-sm rounded-xl">
-              {metrics.map((metric) => (
-                <TabsTrigger 
-                  key={metric.key} 
-                  value={metric.key}
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg hover:bg-white/80"
-                >
+              {metrics.map(metric => <TabsTrigger key={metric.key} value={metric.key} className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg hover:bg-white/80">
                   <div className={`p-2 rounded-lg bg-gradient-to-r ${metric.color} text-white shadow-md`}>
                     {metric.icon}
                   </div>
                   <span className="text-xs font-bold text-center leading-tight">{metric.label}</span>
-                </TabsTrigger>
-              ))}
+                </TabsTrigger>)}
             </TabsList>
           </Tabs>
         </CardContent>
@@ -440,8 +411,6 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
 
       {/* Monthly Metrics Table */}
       {renderMetricTable()}
-    </div>
-  );
+    </div>;
 };
-
 export default MonthlyMetricsView;
