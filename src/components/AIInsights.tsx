@@ -2,9 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, TrendingDown, TrendingUp, AlertTriangle, BarChart2, Award, Brain } from 'lucide-react';
+import { Lightbulb, TrendingDown, TrendingUp, AlertTriangle, BarChart2, Award } from 'lucide-react';
 import { ProcessedTeacherData } from '@/utils/dataProcessor';
-import { formatCurrency, formatPercentage } from '@/utils/currencyFormatter';
 
 interface AIInsightsProps {
   data: ProcessedTeacherData[];
@@ -20,7 +19,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ data, isFiltered }) => {
     const timer = setTimeout(() => {
       generateInsights();
       setLoading(false);
-    }, 500);
+    }, 500); // Simulate AI processing time
     
     return () => clearTimeout(timer);
   }, [data]);
@@ -36,28 +35,20 @@ const AIInsights: React.FC<AIInsightsProps> = ({ data, isFiltered }) => {
 
     const newInsights: { message: string; type: 'info' | 'success' | 'warning' | 'trend' }[] = [];
 
-    // Filter out summary rows
-    const filteredData = data.filter(item => 
-      item.teacherName && 
-      item.teacherName.toLowerCase() !== 'all trainers' &&
-      item.teacherName.toLowerCase() !== 'total' &&
-      item.teacherName.toLowerCase() !== 'summary'
-    );
-
     // Calculate overall metrics
-    const totalNewClients = filteredData.reduce((sum, item) => sum + item.newClients, 0);
-    const totalRetainedClients = filteredData.reduce((sum, item) => sum + item.retainedClients, 0);
-    const totalConvertedClients = filteredData.reduce((sum, item) => sum + item.convertedClients, 0);
-    const totalRevenue = filteredData.reduce((sum, item) => sum + item.totalRevenue, 0);
+    const totalNewClients = data.reduce((sum, item) => sum + item.newClients, 0);
+    const totalRetainedClients = data.reduce((sum, item) => sum + item.retainedClients, 0);
+    const totalConvertedClients = data.reduce((sum, item) => sum + item.convertedClients, 0);
+    const totalRevenue = data.reduce((sum, item) => sum + item.totalRevenue, 0);
     
     const overallRetentionRate = totalNewClients ? (totalRetainedClients / totalNewClients) * 100 : 0;
     const overallConversionRate = totalNewClients ? (totalConvertedClients / totalNewClients) * 100 : 0;
     
     // Find top performing teacher (by conversion rate)
-    const topTeacher = [...filteredData].sort((a, b) => b.conversionRate - a.conversionRate)[0];
+    const topTeacher = [...data].sort((a, b) => b.conversionRate - a.conversionRate)[0];
     
     // Find location with highest retention
-    const locationData = filteredData.reduce((acc, item) => {
+    const locationData = data.reduce((acc, item) => {
       if (!acc[item.location]) {
         acc[item.location] = { newClients: 0, retainedClients: 0, convertedClients: 0, revenue: 0 };
       }
@@ -77,16 +68,38 @@ const AIInsights: React.FC<AIInsightsProps> = ({ data, isFiltered }) => {
     }));
     
     const topLocation = [...locationStats].sort((a, b) => b.retentionRate - a.retentionRate)[0];
+    
+    // Find most effective client source
+    const sourceTypes = ['trials', 'referrals', 'hosted', 'influencerSignups'];
+    const sourceData = sourceTypes.map(source => {
+      const total = data.reduce((sum, item) => sum + (item[source as keyof ProcessedTeacherData] as number), 0);
+      const converted = data.reduce((sum, item) => {
+        if (source === 'trials') return sum + (item.trialToMembershipConversion * (item.trials as number) / 100);
+        if (source === 'referrals') return sum + (item.referralConversionRate * (item.referrals as number) / 100);
+        if (source === 'hosted') return sum;
+        if (source === 'influencerSignups') return sum + (item.influencerConversionRate * (item.influencerSignups as number) / 100);
+        return sum;
+      }, 0);
+      
+      return {
+        source: source.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+        total,
+        converted,
+        conversionRate: total ? (converted / total) * 100 : 0
+      };
+    });
+    
+    const topSource = [...sourceData].sort((a, b) => b.conversionRate - a.conversionRate)[0];
 
     // General insights
     if (isFiltered) {
       newInsights.push({
-        message: `Analyzing ${filteredData.length} teacher${filteredData.length !== 1 ? 's' : ''} with ${totalNewClients} new clients from your current filter.`,
+        message: `Based on your current filter, showing data for ${data.length} teacher${data.length !== 1 ? 's' : ''} with ${totalNewClients} new clients.`,
         type: 'info'
       });
     } else {
       newInsights.push({
-        message: `Your studios acquired ${totalNewClients} new clients with ${formatPercentage(overallRetentionRate)} retention rate.`,
+        message: `Your studios acquired ${totalNewClients} new clients overall, with a ${overallRetentionRate.toFixed(1)}% retention rate.`,
         type: 'info'
       });
     }
@@ -94,73 +107,70 @@ const AIInsights: React.FC<AIInsightsProps> = ({ data, isFiltered }) => {
     // Success insights
     if (topTeacher && topTeacher.conversionRate > 0) {
       newInsights.push({
-        message: `${topTeacher.teacherName} leads with ${formatPercentage(topTeacher.conversionRate)} conversion rate and ${formatCurrency(topTeacher.totalRevenue)} revenue.`,
+        message: `${topTeacher.teacherName} is your top-performing teacher with a ${topTeacher.conversionRate.toFixed(1)}% conversion rate.`,
         type: 'success'
       });
     }
     
     if (topLocation && topLocation.retentionRate > 0) {
       newInsights.push({
-        message: `${topLocation.location} excels in retention with ${formatPercentage(topLocation.retentionRate)} rate.`,
+        message: `${topLocation.location} has the highest client retention at ${topLocation.retentionRate.toFixed(1)}%.`,
         type: 'success'
       });
     }
     
     // Warning insights
-    const lowRetentionTeachers = filteredData.filter(teacher => 
+    const lowRetentionTeachers = data.filter(teacher => 
       teacher.newClients > 5 && teacher.retentionRate < (overallRetentionRate * 0.7)
     );
     
     if (lowRetentionTeachers.length > 0) {
       newInsights.push({
-        message: `${lowRetentionTeachers.length} teacher(s) have retention rates below 70% of team average - needs attention.`,
+        message: `${lowRetentionTeachers.length} teacher(s) have below-average retention rates, requiring attention.`,
         type: 'warning'
       });
     }
     
     // Trend insights
+    if (topSource && topSource.conversionRate > 0) {
+      newInsights.push({
+        message: `${topSource.source} is your most effective client acquisition channel with ${topSource.conversionRate.toFixed(1)}% conversion.`,
+        type: 'trend'
+      });
+    }
+    
     const avgRevenuePerClient = totalConvertedClients ? totalRevenue / totalConvertedClients : 0;
     
     newInsights.push({
-      message: `Average revenue per converted client: ${formatCurrency(avgRevenuePerClient)} across all locations.`,
+      message: `Average revenue per converted client: ₹${avgRevenuePerClient.toLocaleString(undefined, {maximumFractionDigits: 0})}.`,
       type: 'trend'
     });
     
     if (totalRevenue > 0) {
       newInsights.push({
-        message: `Total team revenue: ${formatCurrency(totalRevenue)} with ${formatPercentage(overallConversionRate)} overall conversion.`,
+        message: `Total revenue across all teachers: ₹${totalRevenue.toLocaleString(undefined, {maximumFractionDigits: 0})}.`,
         type: 'success'
       });
     }
-
-    // Performance distribution insights
-    const highPerformers = filteredData.filter(t => t.conversionRate > overallConversionRate * 1.2);
-    const lowPerformers = filteredData.filter(t => t.conversionRate < overallConversionRate * 0.6);
     
-    if (highPerformers.length > 0) {
+    if (totalConvertedClients > 0) {
       newInsights.push({
-        message: `${highPerformers.length} high-performing teachers exceed team average by 20%+ - consider replicating their strategies.`,
-        type: 'trend'
-      });
-    }
-
-    if (lowPerformers.length > 0) {
-      newInsights.push({
-        message: `${lowPerformers.length} teachers performing 40% below average may benefit from additional training and support.`,
-        type: 'warning'
+        message: `Converted ${totalConvertedClients} clients with an overall conversion rate of ${overallConversionRate.toFixed(1)}%.`,
+        type: 'info'
       });
     }
     
+    // Add more insights as needed based on the data
     setInsights(newInsights);
   };
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'info': return <Lightbulb className="h-4 w-4 text-blue-500" />;
-      case 'success': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'trend': return <BarChart2 className="h-4 w-4 text-purple-500" />;
-      default: return <Lightbulb className="h-4 w-4" />;
+      case 'info': return <Lightbulb className="h-5 w-5 text-blue-500" />;
+      case 'success': return <TrendingUp className="h-5 w-5 text-green-500" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'trend': return <BarChart2 className="h-5 w-5 text-purple-500" />;
+      default: return <Lightbulb className="h-5 w-5" />;
     }
   };
 
@@ -169,54 +179,48 @@ const AIInsights: React.FC<AIInsightsProps> = ({ data, isFiltered }) => {
       case 'info': return <Badge variant="info">Insight</Badge>;
       case 'success': return <Badge variant="success">Performance</Badge>;
       case 'warning': return <Badge variant="warning">Opportunity</Badge>;
-      case 'trend': return <Badge variant="premium">Trend</Badge>;
-      default: return <Badge variant="secondary">Insight</Badge>;
+      case 'trend': return <Badge variant="purple">Trend</Badge>;
+      default: return <Badge>Insight</Badge>;
     }
   };
 
   return (
-    <Card className="border-0 shadow-lg animate-fade-in bg-gradient-to-br from-white to-slate-50">
-      <CardHeader className="pb-3 border-b border-slate-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-            <CardTitle className="text-lg font-semibold">AI Performance Insights</CardTitle>
-          </div>
-          <Badge variant="premium">Powered by AI</Badge>
+    <Card className="bg-white/70 backdrop-blur-sm rounded-lg border shadow-sm mb-6 animate-fade-in">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Award className="h-5 w-5 text-primary" />
+          <CardTitle className="text-lg font-medium">AI-Driven Insights</CardTitle>
         </div>
+        <Badge variant="premium" className="text-xs px-2.5 py-0.5">Premium</Badge>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent>
         {loading ? (
-          <div className="flex items-center justify-center h-[120px]">
-            <div className="animate-pulse space-y-3 w-full">
-              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-              <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+          <div className="flex items-center justify-center h-[100px]">
+            <div className="animate-pulse flex space-x-4 w-full">
+              <div className="flex-1 space-y-3">
+                <div className="h-5 bg-slate-200 rounded w-3/4"></div>
+                <div className="h-5 bg-slate-200 rounded w-1/2"></div>
+                <div className="h-5 bg-slate-200 rounded w-5/6"></div>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {insights.map((insight, index) => (
               <div
                 key={index}
-                className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-md animate-fade-in ${
-                  insight.type === 'info' ? 'bg-blue-50/50 border-blue-200/50' : 
-                  insight.type === 'success' ? 'bg-green-50/50 border-green-200/50' : 
-                  insight.type === 'warning' ? 'bg-amber-50/50 border-amber-200/50' :
-                  'bg-purple-50/50 border-purple-200/50'
-                }`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`p-3 rounded-lg border flex items-start gap-3 hover:shadow-md transition-all duration-200 
+                  ${insight.type === 'info' ? 'bg-blue-50 border-blue-200' : 
+                    insight.type === 'success' ? 'bg-green-50 border-green-200' : 
+                    insight.type === 'warning' ? 'bg-amber-50 border-amber-200' :
+                    'bg-purple-50 border-purple-200'}`}
               >
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">
-                    {getIcon(insight.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="mb-2">{getBadge(insight.type)}</div>
-                    <p className="text-sm text-slate-700 leading-relaxed">{insight.message}</p>
-                  </div>
+                <div className="mt-0.5">
+                  {getIcon(insight.type)}
+                </div>
+                <div>
+                  <div className="mb-1">{getBadge(insight.type)}</div>
+                  <p className="text-sm">{insight.message}</p>
                 </div>
               </div>
             ))}

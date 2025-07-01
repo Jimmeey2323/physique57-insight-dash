@@ -5,23 +5,27 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-lg border font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center justify-center rounded-xl border font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-w-[80px] h-7",
   {
     variants: {
       variant: {
-        default: "border-slate-200 bg-slate-50 text-slate-700 px-2.5 py-1 text-xs",
-        secondary: "border-slate-200 bg-white text-slate-600 px-2.5 py-1 text-xs shadow-sm",
-        destructive: "border-red-200 bg-red-50 text-red-700 px-2.5 py-1 text-xs",
-        outline: "border-slate-200 text-slate-700 px-2.5 py-1 text-xs bg-white shadow-sm",
-        success: "border-emerald-200 bg-emerald-50 text-emerald-700 px-2.5 py-1 text-xs font-medium",
-        warning: "border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-1 text-xs font-medium",
-        info: "border-blue-200 bg-blue-50 text-blue-700 px-2.5 py-1 text-xs font-medium",
-        premium: "border-purple-200 bg-purple-50 text-purple-700 px-2.5 py-1 text-xs font-medium",
-        conversion: "border-blue-200 bg-blue-50 text-blue-700 px-2.5 py-1 text-xs font-medium",
-        retention: "border-emerald-200 bg-emerald-50 text-emerald-700 px-2.5 py-1 text-xs font-medium",
-        excluded: "border-red-200 bg-red-50 text-red-700 px-2.5 py-1 text-xs font-medium",
-        modern: "border-slate-200 bg-white text-slate-700 px-2.5 py-1 text-xs font-medium shadow-sm",
-        luxury: "border-slate-200 bg-gradient-to-r from-white to-slate-50 text-slate-700 px-2.5 py-1 text-xs font-medium shadow-sm",
+        default: "border-transparent bg-primary text-primary-foreground shadow-sm px-3 py-1.5 text-xs",
+        secondary: "border-transparent bg-secondary text-secondary-foreground shadow-sm px-3 py-1.5 text-xs",
+        destructive: "border-transparent bg-destructive text-destructive-foreground shadow-sm px-3 py-1.5 text-xs",
+        outline: "text-foreground shadow-sm px-3 py-1.5 text-xs",
+        success: "border-transparent bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        warning: "border-transparent bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        active: "border-transparent bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        info: "border-transparent bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        purple: "border-transparent bg-gradient-to-r from-purple-500 to-violet-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        emerald: "border-transparent bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        rose: "border-transparent bg-gradient-to-r from-rose-500 to-red-600 text-white px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[80px] h-7",
+        premium: "border-transparent bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg backdrop-blur-sm px-4 py-2 text-xs font-bold min-w-[80px] h-7",
+        conversion: "border-transparent bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-700 text-white px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[90px] h-7 flex items-center gap-1",
+        retention: "border-transparent bg-gradient-to-r from-emerald-500 via-green-600 to-teal-700 text-white px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[90px] h-7 flex items-center gap-1",
+        excluded: "border-transparent bg-gradient-to-r from-rose-500 via-red-600 to-red-700 text-white px-3 py-1 text-xs font-bold shadow-lg backdrop-blur-sm min-w-[90px] h-7 flex items-center gap-1",
+        modern: "border border-slate-200/50 px-4 py-2 text-xs rounded-xl bg-white/90 text-slate-800 font-bold shadow-md backdrop-blur-sm min-w-[80px] h-7",
+        luxury: "border border-slate-200/30 px-4 py-2 text-xs rounded-xl bg-gradient-to-r from-white/95 to-slate-50/95 text-slate-800 font-bold shadow-lg backdrop-blur-xl min-w-[80px] h-7",
       },
     },
     defaultVariants: {
