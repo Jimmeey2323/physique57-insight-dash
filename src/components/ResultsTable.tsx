@@ -275,7 +275,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
               </SelectContent>
             </Select>
 
-            /*<Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
               <SelectTrigger className="bg-white/90 border-white/40 focus:border-primary/50 rounded-xl">
                 <SelectValue placeholder="All Teachers" />
               </SelectTrigger>
@@ -283,7 +283,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
                 <SelectItem value="">All Teachers</SelectItem>
                 {uniqueTeachers.map(teacher => <SelectItem key={teacher} value={teacher}>{teacher}</SelectItem>)}
               </SelectContent>
-            </Select>*/
+            </Select>
 
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
               <SelectTrigger className="bg-white/90 border-white/40 focus:border-primary/50 rounded-xl">
