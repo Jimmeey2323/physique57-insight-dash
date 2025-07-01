@@ -39,7 +39,7 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, React.HTMLAttribut
   isClickable = false,
   ...props
 }, ref) => (
-  <tfoot ref={ref} className={cn("sticky bottom-0 z-10 bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 backdrop-blur-sm border-t font-medium", "[&>tr]:last:border-b-0", isClickable && "cursor-pointer hover:bg-gradient-to-r hover:from-slate-700 hover:via-slate-800 hover:to-slate-700 transition-colors", className)} {...props} />
+  <tfoot ref={ref} className={cn("sticky bottom-0 z-20 bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 backdrop-blur-sm border-t-2 border-slate-300 font-medium shadow-lg", "[&>tr]:last:border-b-0", isClickable && "cursor-pointer hover:bg-gradient-to-r hover:from-slate-700 hover:via-slate-800 hover:to-slate-700 transition-colors", className)} {...props} />
 ));
 TableFooter.displayName = "TableFooter";
 

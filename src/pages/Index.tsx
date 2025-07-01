@@ -227,6 +227,7 @@ const Index = () => {
       progress: 0,
       currentStep: 'Starting processing...'
     });
+    
     try {
       // Parse CSV files
       updateProgress({
@@ -285,12 +286,19 @@ const Index = () => {
         }
       }));
 
-      // Show success and finish processing
+      // Show success and finish processing - ensure state updates are complete
+      updateProgress({
+        progress: 100,
+        currentStep: 'Finalizing...'
+      });
+      
+      // Use a shorter timeout and ensure the results are visible immediately
       setTimeout(() => {
         setIsProcessing(false);
         setResultsVisible(true);
         toast.success('Files processed successfully');
-      }, 1000);
+      }, 500);
+      
     } catch (error) {
       console.error('Error processing files:', error);
       setIsProcessing(false);

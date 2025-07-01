@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -9,9 +10,11 @@ import { Progress } from '@/components/ui/progress';
 import { safeToFixed, safeFormatCurrency } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
 interface PerformanceInsightsViewProps {
   data: ProcessedTeacherData[];
 }
+
 const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
   data
 }) => {
@@ -56,6 +59,7 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
 
       // Performance score calculation (weighted)
       const performanceScore = conversionRate * 0.25 + retentionRate * 0.25 + (100 - noShowRate) * 0.15 + (100 - cancellationRate) * 0.15 + Math.min(revenuePerClient / 100, 100) * 0.1 + Math.min(classUtilization / 10, 100) * 0.1;
+      
       return {
         ...teacher,
         conversionRate: safeToFixed(conversionRate, 1),
@@ -135,23 +139,26 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
       totalClasses: 0
     });
   }, [performanceData]);
+
   const avgConversionRate = totals.newClients > 0 ? totals.convertedClients / totals.newClients * 100 : 0;
   const avgRetentionRate = totals.newClients > 0 ? totals.retainedClients / totals.newClients * 100 : 0;
   const avgNoShowRate = totals.totalVisits > 0 ? totals.noShows / totals.totalVisits * 100 : 0;
   const avgRevenuePerClient = totals.newClients > 0 ? totals.totalRevenue / totals.newClients : 0;
   const avgClassUtilization = totals.totalClasses > 0 ? totals.totalVisits / totals.totalClasses : 0;
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       {/* Key Insights Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="animate-fade-in border-l-4 border-l-green-500">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-white">
               <Star className="h-4 w-4 text-yellow-500" />
               Top Performer
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold">{topPerformer?.teacherName || 'N/A'}</div>
+            <div className="text-lg font-bold text-white">{topPerformer?.teacherName || 'N/A'}</div>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{topPerformer?.performanceScore || 0} score</Badge>
               <span className="text-xs text-muted-foreground">{topPerformer?.location || ''}</span>
@@ -310,11 +317,9 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
       </Card>
 
       {/* Detailed Performance Table */}
-      <Card className="animate-fade-in" style={{
-      animationDelay: '700ms'
-    }}>
+      <Card className="animate-fade-in" style={{ animationDelay: '700ms' }}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <CheckCircle className="h-5 w-5 text-primary" />
             Detailed Performance Metrics
           </CardTitle>
@@ -322,26 +327,25 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
         <CardContent className="p-0">
           <Table maxHeight="500px">
             <TableHeader>
-              <TableRow className="bg-zinc-900 whitespace-nowrap ">
-                <TableHead className="w-16 text-center">Rank</TableHead>
-                <TableHead className="min-w-[160px]">Teacher</TableHead>
-                <TableHead className="min-w-[120px]">Location</TableHead>
-                <TableHead className="w-24 text-center">Score</TableHead>
-                <TableHead className="w-24 text-center">Conv %</TableHead>
-                <TableHead className="w-24 text-center">Ret %</TableHead>
-                <TableHead className="w-24 text-center">No Show %</TableHead>
-                <TableHead className="w-28 text-center">Rev/Client</TableHead>
-                <TableHead className="w-24 text-center">Util</TableHead>
-                <TableHead className="w-20 text-center">Status</TableHead>
+              <TableRow className="bg-zinc-900 whitespace-nowrap">
+                <TableHead className="w-16 text-center text-white">Rank</TableHead>
+                <TableHead className="min-w-[160px] text-white">Teacher</TableHead>
+                <TableHead className="min-w-[120px] text-white">Location</TableHead>
+                <TableHead className="w-24 text-center text-white">Score</TableHead>
+                <TableHead className="w-24 text-center text-white">Conv %</TableHead>
+                <TableHead className="w-24 text-center text-white">Ret %</TableHead>
+                <TableHead className="w-24 text-center text-white">No Show %</TableHead>
+                <TableHead className="w-28 text-center text-white">Rev/Client</TableHead>
+                <TableHead className="w-24 text-center text-white">Util</TableHead>
+                <TableHead className="w-20 text-center text-white">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {performanceData.map((teacher, index) => {
-              const isHigh = highPerformers.includes(teacher);
-              const isLow = lowPerformers.includes(teacher);
-              return <TableRow key={teacher.teacherName} className="animate-fade-in border-b border-slate-200/30" style={{
-                animationDelay: `${800 + index * 50}ms`
-              }}>
+                const isHigh = highPerformers.includes(teacher);
+                const isLow = lowPerformers.includes(teacher);
+                return (
+                  <TableRow key={teacher.teacherName} className="animate-fade-in border-b border-slate-200/30" style={{ animationDelay: `${800 + index * 50}ms` }}>
                     <TableCell className="text-center">
                       <Badge variant={index < 3 ? "default" : "secondary"} className="text-xs">
                         #{index + 1}
@@ -370,12 +374,18 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
                         {isHigh ? 'High' : isLow ? 'Low' : 'Avg'}
                       </Badge>
                     </TableCell>
-                  </TableRow>;
-            })}
+                  </TableRow>
+                );
+              })}
             </TableBody>
             <TableFooter>
-              <TableRow className="border-t-2 border-slate-300/50 bg-gradient-to-r from-slate-800/95 via-slate-700/95 to-slate-800/95 bg-zinc-900">
-                <TableCell className="font-bold text-white text-center" colSpan={3}>Total/Average</TableCell>
+              <TableRow className="border-t-2 border-slate-300/50 bg-gradient-to-r from-slate-800/95 via-slate-700/95 to-slate-800/95">
+                <TableCell className="font-bold text-white text-center" colSpan={3}>
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4" />
+                    <span>Total/Average</span>
+                  </div>
+                </TableCell>
                 <TableCell className="text-center font-bold text-white">{safeToFixed(averagePerformance, 1)}</TableCell>
                 <TableCell className="text-center font-bold text-white">{safeToFixed(avgConversionRate, 1)}%</TableCell>
                 <TableCell className="text-center font-bold text-white">{safeToFixed(avgRetentionRate, 1)}%</TableCell>
@@ -386,8 +396,22 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
               </TableRow>
             </TableFooter>
           </Table>
+          
+          {/* Summary Footer */}
+          <div className="p-4 bg-gray-50 border-t">
+            <h4 className="font-semibold text-gray-800 mb-2">Performance Summary:</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• <strong>{highPerformers.length}</strong> high performers ({safeToFixed(highPerformers.length / performanceData.length * 100, 0)}% of team)</li>
+              <li>• Average team performance score: <strong>{safeToFixed(averagePerformance, 1)}</strong></li>
+              <li>• Team conversion rate: <strong>{safeToFixed(avgConversionRate, 1)}%</strong></li>
+              <li>• Team retention rate: <strong>{safeToFixed(avgRetentionRate, 1)}%</strong></li>
+              <li>• <strong>{lowPerformers.length}</strong> teachers need performance support</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default PerformanceInsightsView;
