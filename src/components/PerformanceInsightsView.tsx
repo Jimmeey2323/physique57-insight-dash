@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -18,10 +17,18 @@ interface PerformanceInsightsViewProps {
 const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
   data
 }) => {
-  // Performance analysis calculations
+  // Performance analysis calculations - filter out "All Trainers" rows
   const performanceData = React.useMemo(() => {
+    // Filter out any "All Trainers" or summary rows
+    const filteredData = data.filter(item => 
+      item.teacherName && 
+      item.teacherName.toLowerCase() !== 'all trainers' &&
+      item.teacherName.toLowerCase() !== 'total' &&
+      item.teacherName.toLowerCase() !== 'summary'
+    );
+
     // Group by teacher and calculate performance metrics
-    const teacherPerformance = data.reduce((acc, item) => {
+    const teacherPerformance = filteredData.reduce((acc, item) => {
       if (!acc[item.teacherName]) {
         acc[item.teacherName] = {
           teacherName: item.teacherName,
@@ -383,7 +390,7 @@ const PerformanceInsightsView: React.FC<PerformanceInsightsViewProps> = ({
                 <TableCell className="font-bold text-white text-center" colSpan={3}>
                   <div className="flex items-center gap-2">
                     <Award className="h-4 w-4" />
-                    <span>Total/Average</span>
+                    <span>TOTALS / AVERAGE</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-center font-bold text-white">{safeToFixed(averagePerformance, 1)}</TableCell>
