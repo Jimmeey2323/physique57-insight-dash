@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import RevenueChart from './charts/RevenueChart';
 import ConversionRatesChart from './charts/ConversionRatesChart';
 import ClientSourceChart from './charts/ClientSourceChart';
 import TableViewOptions from './TableViewOptions';
+
 interface ResultsTableProps {
   data: ProcessedTeacherData[];
   locations: string[];
@@ -25,6 +26,7 @@ interface ResultsTableProps {
   dataMode: 'teacher' | 'studio';
   onFilterChange: (filters: any) => void;
 }
+
 const ResultsTable: React.FC<ResultsTableProps> = ({
   data,
   locations,
@@ -47,13 +49,28 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
   const [groupBy, setGroupBy] = useState<string>('none');
   const [activeView, setActiveView] = useState('table');
 
-  // Get unique values for filters
-  const uniqueTeachers = useMemo(() => [...new Set(data.map(item => item.teacherName).filter(Boolean))].sort(), [data]);
-  const uniquePeriods = useMemo(() => [...new Set(data.map(item => item.period).filter(Boolean))].sort(), [data]);
+  // Filter out "All Trainers" rows from the data
+  const filteredData = useMemo(() => {
+    return data.filter(item => 
+      item.teacherName && 
+      item.teacherName.toLowerCase() !== 'all trainers' &&
+      item.teacherName.toLowerCase() !== 'total' &&
+      item.teacherName.toLowerCase() !== 'summary'
+    );
+  }, [data]);
+
+  // Get unique values for filters (excluding "All Trainers")
+  const uniqueTeachers = useMemo(() => {
+    return [...new Set(filteredData.map(item => item.teacherName).filter(Boolean))].sort();
+  }, [filteredData]);
+
+  const uniquePeriods = useMemo(() => {
+    return [...new Set(filteredData.map(item => item.period).filter(Boolean))].sort();
+  }, [filteredData]);
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    let filtered = data.filter(item => {
+    let filtered = filteredData.filter(item => {
       const matchesSearch = !searchTerm || item.teacherName?.toLowerCase().includes(searchTerm.toLowerCase()) || item.location?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLocation = !selectedLocation || item.location === selectedLocation;
       const matchesTeacher = !selectedTeacher || item.teacherName === selectedTeacher;
@@ -75,7 +92,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       });
     }
     return filtered;
-  }, [data, searchTerm, selectedLocation, selectedTeacher, selectedPeriod, sortColumn, sortDirection]);
+  }, [filteredData, searchTerm, selectedLocation, selectedTeacher, selectedPeriod, sortColumn, sortDirection]);
 
   // Group data if needed
   const groupedData = useMemo(() => {
@@ -87,23 +104,25 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       groups[key].push(item);
     });
     return Object.entries(groups).flatMap(([groupKey, items]) => [
-    // Group header
-    {
-      ...items[0],
-      isGroupHeader: true,
-      groupValue: groupKey,
-      newClients: items.reduce((sum, item) => sum + item.newClients, 0),
-      retainedClients: items.reduce((sum, item) => sum + item.retainedClients, 0),
-      convertedClients: items.reduce((sum, item) => sum + item.convertedClients, 0),
-      totalRevenue: items.reduce((sum, item) => sum + item.totalRevenue, 0)
-    } as ProcessedTeacherData & {
-      isGroupHeader: boolean;
-      groupValue: string;
-    }, ...items.map(item => ({
-      ...item,
-      isGroupHeader: false,
-      groupValue: groupKey
-    }))]);
+      // Group header
+      {
+        ...items[0],
+        isGroupHeader: true,
+        groupValue: groupKey,
+        newClients: items.reduce((sum, item) => sum + item.newClients, 0),
+        retainedClients: items.reduce((sum, item) => sum + item.retainedClients, 0),
+        convertedClients: items.reduce((sum, item) => sum + item.convertedClients, 0),
+        totalRevenue: items.reduce((sum, item) => sum + item.totalRevenue, 0)
+      } as ProcessedTeacherData & {
+        isGroupHeader: boolean;
+        groupValue: string;
+      }, 
+      ...items.map(item => ({
+        ...item,
+        isGroupHeader: false,
+        groupValue: groupKey
+      }))
+    ]);
   }, [filteredAndSortedData, groupBy]);
 
   // Calculate summary metrics
@@ -112,16 +131,25 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
     const totalRetained = filteredAndSortedData.reduce((sum, item) => sum + item.retainedClients, 0);
     const totalConverted = filteredAndSortedData.reduce((sum, item) => sum + item.convertedClients, 0);
     const totalRevenue = filteredAndSortedData.reduce((sum, item) => sum + item.totalRevenue, 0);
+    const totalNoShows = filteredAndSortedData.reduce((sum, item) => sum + (item.noShows || 0), 0);
+    const totalTrials = filteredAndSortedData.reduce((sum, item) => sum + (item.trials || 0), 0);
+    const totalReferrals = filteredAndSortedData.reduce((sum, item) => sum + (item.referrals || 0), 0);
+    
     return {
       totalNewClients,
       totalRetained,
       totalConverted,
       totalRevenue,
+      totalNoShows,
+      totalTrials,
+      totalReferrals,
       avgRetentionRate: totalNewClients > 0 ? totalRetained / totalNewClients * 100 : 0,
       avgConversionRate: totalNewClients > 0 ? totalConverted / totalNewClients * 100 : 0,
-      avgRevenuePerClient: totalConverted > 0 ? totalRevenue / totalConverted : 0
+      avgRevenuePerClient: totalConverted > 0 ? totalRevenue / totalConverted : 0,
+      avgNoShowRate: totalNewClients > 0 ? totalNoShows / totalNewClients * 100 : 0
     };
   }, [filteredAndSortedData]);
+
   const handleSort = useCallback((column: string) => {
     if (sortColumn === column) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -130,12 +158,14 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       setSortDirection('desc');
     }
   }, [sortColumn]);
+
   const handleDrillDown = useCallback((rowData: ProcessedTeacherData, type: 'teacher' | 'studio' = 'teacher', metricType: 'conversion' | 'retention' | 'all' = 'all') => {
     setDrillDownData(rowData);
     setDrillDownType(type);
     setDrillDownMetricType(metricType);
     setIsDrillDownOpen(true);
   }, []);
+
   const getRetentionBadge = (rate: number) => {
     if (rate >= 70) {
       return <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 font-semibold">
@@ -163,6 +193,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
         </Badge>;
     }
   };
+
   const getConversionBadge = (rate: number) => {
     if (rate >= 25) {
       return <Badge className="bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-1.5 px-3 py-1.5 font-semibold">
@@ -190,12 +221,15 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
         </Badge>;
     }
   };
+
   const availableColumns = ['teacherName', 'location', 'period', 'newClients', 'retainedClients', 'convertedClients', 'retentionRate', 'conversionRate', 'totalRevenue', 'averageRevenuePerClient', 'noShowRate', 'trials', 'referrals'];
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>;
   }
+
   return <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -291,7 +325,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-hidden">
-            <Table>
+            <Table maxHeight="500px">
               <TableHeader>
                 <TableRow className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:bg-gradient-to-r hover:from-slate-800 hover:via-slate-700 hover:to-slate-800 border-b border-white/20">
                   {visibleColumns.includes('teacherName') && <TableHead sortable sortDirection={sortColumn === 'teacherName' ? sortDirection : undefined} onSort={() => handleSort('teacherName')} className="text-white font-semibold">
@@ -397,7 +431,37 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
                     </TableRow>;
               })}
               </TableBody>
+              <TableFooter>
+                <TableRow className="border-t-2 border-slate-300/50 bg-gradient-to-r from-slate-800/95 via-slate-700/95 to-slate-800/95">
+                  {visibleColumns.includes('teacherName') && <TableCell className="font-bold text-white">
+                      <div className="flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        <span>TOTALS</span>
+                      </div>
+                    </TableCell>}
+                  {visibleColumns.includes('location') && <TableCell className="font-bold text-white">-</TableCell>}
+                  {visibleColumns.includes('period') && <TableCell className="font-bold text-white">-</TableCell>}
+                  {visibleColumns.includes('newClients') && <TableCell className="text-center font-bold text-white">{summaryMetrics.totalNewClients}</TableCell>}
+                  {visibleColumns.includes('retentionRate') && <TableCell className="text-center font-bold text-white">{safeToFixed(summaryMetrics.avgRetentionRate, 1)}%</TableCell>}
+                  {visibleColumns.includes('conversionRate') && <TableCell className="text-center font-bold text-white">{safeToFixed(summaryMetrics.avgConversionRate, 1)}%</TableCell>}
+                  {visibleColumns.includes('totalRevenue') && <TableCell className="text-right font-bold text-white">{safeFormatCurrency(summaryMetrics.totalRevenue)}</TableCell>}
+                  {visibleColumns.includes('averageRevenuePerClient') && <TableCell className="text-right font-bold text-white">{safeFormatCurrency(summaryMetrics.avgRevenuePerClient)}</TableCell>}
+                  <TableCell className="text-center font-bold text-white">{filteredAndSortedData.length}</TableCell>
+                </TableRow>
+              </TableFooter>
             </Table>
+          </div>
+          
+          {/* Summary Footer */}
+          <div className="p-4 bg-gray-50 border-t">
+            <h4 className="font-semibold text-gray-800 mb-2">Table Summary:</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• <strong>{filteredAndSortedData.length}</strong> teachers displayed with filtered data</li>
+              <li>• Total new clients: <strong>{summaryMetrics.totalNewClients.toLocaleString()}</strong></li>
+              <li>• Average conversion rate: <strong>{safeToFixed(summaryMetrics.avgConversionRate, 1)}%</strong></li>
+              <li>• Average retention rate: <strong>{safeToFixed(summaryMetrics.avgRetentionRate, 1)}%</strong></li>
+              <li>• Total revenue generated: <strong>{safeFormatCurrency(summaryMetrics.totalRevenue)}</strong></li>
+            </ul>
           </div>
         </CardContent>
       </Card>
@@ -406,4 +470,5 @@ const ResultsTable: React.FC<ResultsTableProps> = ({
       <DrillDownAnalytics isOpen={isDrillDownOpen} onClose={() => setIsDrillDownOpen(false)} data={drillDownData} type={drillDownType} metricType={drillDownMetricType} />
     </div>;
 };
+
 export default ResultsTable;
