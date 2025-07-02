@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FileText, Filter, AlertTriangle, Calendar, CalendarCheck, Clock, Users, UserCheck, UserPlus, UserX, ArrowUpDown, RefreshCcw, Eye } from 'lucide-react';
+import { Search, FileText, Filter, AlertTriangle, Calendar, CalendarCheck, Clock, Users, UserCheck, UserPlus, UserX, ArrowUpDown, RefreshCcw, Eye, Database, TrendingUp, Star, Award, Crown } from 'lucide-react';
 import { safeFormatCurrency, safeFormatDate, daysBetweenDates, sortDataByColumn, calculateConversionSpan, calculateRetentionSpan, formatClientName } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -114,11 +115,13 @@ const RawDataView: React.FC<RawDataProps> = ({
   const renderDataTable = (data: any[], type: string) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-          <p className="text-xl font-medium mb-2">No {type} Data Available</p>
-          <p className="text-muted-foreground max-w-md">
-            No {type.toLowerCase()} data was found. Please ensure you've uploaded the correct CSV files.
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-gradient-to-br from-slate-50/80 to-white/60 rounded-2xl border border-slate-200/50">
+          <div className="p-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 mb-6">
+            <Database className="h-12 w-12 text-slate-400" />
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-slate-800">No {type} Data Available</h3>
+          <p className="text-slate-600 max-w-md leading-relaxed">
+            No {type.toLowerCase()} data was found. Please ensure you've uploaded the correct CSV files and they contain valid data.
           </p>
         </div>
       );
@@ -129,39 +132,47 @@ const RawDataView: React.FC<RawDataProps> = ({
     const filterFields = columns.filter(col => !['id', 'uuid'].includes(col.toLowerCase()));
 
     return (
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2">
+      <Card className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-white/20">
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg flex items-center">
-                <FileText className="h-4 w-4 mr-2" />
-                {type} Data
-                <Badge variant="outline" className="ml-2 flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {filteredData.length} rows
+              <CardTitle className="text-xl flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    {type} Data
+                    <Star className="h-4 w-4 text-blue-400 animate-pulse" />
+                  </div>
+                  <div className="text-sm text-white/80 font-normal mt-1">Raw data from uploaded files</div>
+                </div>
+                <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 font-bold">
+                  <Users className="h-4 w-4 mr-2" />
+                  {filteredData.length} records
                 </Badge>
               </CardTitle>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <div className="flex flex-wrap items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <div className="relative flex-1 min-w-[280px]">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-white/60 pointer-events-none" />
                 <Input 
-                  placeholder="Search data..." 
-                  className="pl-8" 
+                  placeholder="Search across all data..." 
+                  className="pl-10 bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 transition-all duration-200" 
                   value={searchTerm} 
                   onChange={e => setSearchTerm(e.target.value)} 
                   autoComplete="off" 
                 />
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Select value={filterField} onValueChange={setFilterField}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by field" />
+                  <SelectTrigger className="w-[200px] bg-white/20 border-white/30 text-white">
+                    <SelectValue placeholder="Select field to filter" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Select field</SelectItem>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="">All fields</SelectItem>
                     {filterFields.map(field => (
                       <SelectItem key={field} value={field}>{field}</SelectItem>
                     ))}
@@ -170,8 +181,8 @@ const RawDataView: React.FC<RawDataProps> = ({
                 
                 {filterField && (
                   <Input 
-                    placeholder="Filter value..." 
-                    className="w-[180px]" 
+                    placeholder="Enter filter value..." 
+                    className="w-[200px] bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30" 
                     value={filterValue} 
                     onChange={e => setFilterValue(e.target.value)} 
                     autoComplete="off" 
@@ -182,13 +193,15 @@ const RawDataView: React.FC<RawDataProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm" 
+                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                     onClick={() => {
                       setFilterField('');
                       setFilterValue('');
                       setSearchTerm('');
                     }}
                   >
-                    Clear filters
+                    <RefreshCcw className="h-4 w-4 mr-2" />
+                    Clear
                   </Button>
                 )}
               </div>
@@ -196,40 +209,48 @@ const RawDataView: React.FC<RawDataProps> = ({
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table maxHeight="400px">
-            <TableHeader>
-              <TableRow>
-                {columns.map(column => (
-                  <TableHead 
-                    key={column} 
-                    sortable 
-                    sortDirection={sortColumn === column ? sortDirection : undefined} 
-                    onSort={() => handleSort(column)}
-                  >
-                    {column}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((row, rowIndex) => (
-                <TableRow key={rowIndex}>
+          <ScrollArea className="h-[500px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {columns.map(column => (
-                    <TableCell key={`${rowIndex}-${column}`}>
-                      {column.toLowerCase().includes('date') && row[column] 
-                        ? safeFormatDate(row[column], 'medium')
-                        : column.toLowerCase().includes('value') || 
-                          column.toLowerCase().includes('revenue') || 
-                          column.toLowerCase().includes('price')
-                        ? safeFormatCurrency(row[column])
-                        : row[column] !== undefined ? row[column].toString() : ''
-                      }
-                    </TableCell>
+                    <TableHead 
+                      key={column} 
+                      sortable 
+                      sortDirection={sortColumn === column ? sortDirection : undefined} 
+                      onSort={() => handleSort(column)}
+                      className="text-white font-bold px-6 py-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        {column}
+                        <ArrowUpDown className="h-3 w-3 opacity-50" />
+                      </div>
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredData.map((row, rowIndex) => (
+                  <TableRow key={rowIndex} className="hover:bg-slate-50/80 transition-all duration-200 border-b border-slate-100/50">
+                    {columns.map(column => (
+                      <TableCell key={`${rowIndex}-${column}`} className="px-6 py-4">
+                        <div className="font-medium text-slate-700">
+                          {column.toLowerCase().includes('date') && row[column] 
+                            ? safeFormatDate(row[column], 'medium')
+                            : column.toLowerCase().includes('value') || 
+                              column.toLowerCase().includes('revenue') || 
+                              column.toLowerCase().includes('price')
+                            ? safeFormatCurrency(row[column])
+                            : row[column] !== undefined ? row[column].toString() : ''
+                          }
+                        </div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
     );
@@ -246,142 +267,195 @@ const RawDataView: React.FC<RawDataProps> = ({
 
     if (!hasProcessingData) {
       return (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-          <p className="text-xl font-medium mb-2">No Processing Data Available</p>
-          <p className="text-muted-foreground max-w-md">
-            No processed data was found. Please ensure you've processed your CSV files correctly.
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-gradient-to-br from-blue-50/80 to-indigo-50/60 rounded-2xl border border-blue-200/50">
+          <div className="p-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 mb-6">
+            <AlertTriangle className="h-12 w-12 text-blue-600" />
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-slate-800">No Processing Data Available</h3>
+          <p className="text-slate-600 max-w-md leading-relaxed">
+            No processed data was found. Please ensure you've processed your CSV files correctly and the analysis has been completed.
           </p>
         </div>
       );
     }
 
     return (
-      <div className="space-y-6">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-6 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <Users className="h-4 w-4 mr-2 text-blue-600" />
-                New Clients
-              </div>
-              <div className="text-2xl font-semibold text-blue-800">
-                {counts.newClientCount}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <UserCheck className="h-4 w-4 mr-2 text-indigo-600" />
-                Included
-              </div>
-              <div className="text-2xl font-semibold text-indigo-800">
-                {counts.includedCount}
+      <div className="space-y-8">
+        {/* Enhanced Summary Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+          <Card className="bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-transparent border border-blue-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-blue-600 font-semibold">New Clients</div>
+                  <div className="text-2xl font-bold text-blue-800">{counts.newClientCount}</div>
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-red-50 to-red-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <UserX className="h-4 w-4 mr-2 text-red-600" />
-                Excluded
-              </div>
-              <div className="text-2xl font-semibold text-red-800">
-                {counts.excludedCount}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gradient-to-br from-green-50 to-green-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <UserPlus className="h-4 w-4 mr-2 text-green-600" />
-                Converted
-              </div>
-              <div className="text-2xl font-semibold text-green-800">
-                {processingResults.convertedClients?.length || 0}
+
+          <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-transparent border border-emerald-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
+                  <UserCheck className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-emerald-600 font-semibold">Included</div>
+                  <div className="text-2xl font-bold text-emerald-800">{counts.includedCount}</div>
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <ArrowUpDown className="h-4 w-4 mr-2 text-purple-600" />
-                Conversion Rate
-              </div>
-              <div className="text-2xl font-semibold text-purple-800">
-                {counts.conversionRate}%
+
+          <Card className="bg-gradient-to-br from-red-500/10 via-red-600/5 to-transparent border border-red-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg">
+                  <UserX className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-red-600 font-semibold">Excluded</div>
+                  <div className="text-2xl font-bold text-red-800">{counts.excludedCount}</div>
+                </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-teal-50 to-teal-100">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <RefreshCcw className="h-4 w-4 mr-2 text-teal-600" />
-                Retention Rate
+
+          <Card className="bg-gradient-to-br from-purple-500/10 via-purple-600/5 to-transparent border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
+                  <UserPlus className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-purple-600 font-semibold">Converted</div>
+                  <div className="text-2xl font-bold text-purple-800">{processingResults.convertedClients?.length || 0}</div>
+                </div>
               </div>
-              <div className="text-2xl font-semibold text-teal-800">
-                {counts.retentionRate}%
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-indigo-500/10 via-indigo-600/5 to-transparent border border-indigo-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-indigo-600 font-semibold">Conversion</div>
+                  <div className="text-2xl font-bold text-indigo-800">{counts.conversionRate}%</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-teal-500/10 via-teal-600/5 to-transparent border border-teal-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg">
+                  <RefreshCcw className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="text-sm text-teal-600 font-semibold">Retention</div>
+                  <div className="text-2xl font-bold text-teal-800">{counts.retentionRate}%</div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Detailed Client Lists */}
-        <Tabs value={clientRecordTab} onValueChange={setClientRecordTab}>
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="new" className="flex items-center gap-1">
-              <UserPlus className="h-4 w-4" /> 
-              New Clients 
-              <Badge variant="outline" className="ml-1">{processingResults.newClients?.length || 0}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="converted" className="flex items-center gap-1">
-              <UserCheck className="h-4 w-4" /> 
-              Converted 
-              <Badge variant="outline" className="ml-1">{processingResults.convertedClients?.length || 0}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="retained" className="flex items-center gap-1">
-              <RefreshCcw className="h-4 w-4" /> 
-              Retained 
-              <Badge variant="outline" className="ml-1">{processingResults.retainedClients?.length || 0}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="excluded" className="flex items-center gap-1">
-              <UserX className="h-4 w-4" /> 
-              Excluded 
-              <Badge variant="outline" className="ml-1">{processingResults.excluded?.length || 0}</Badge>
-            </TabsTrigger>
-          </TabsList>
+        {/* Enhanced Client Lists */}
+        <Card className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-white/20">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Award className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  Client Analysis & Processing Results
+                  <Crown className="h-4 w-4 text-blue-400 animate-pulse" />
+                </div>
+                <div className="text-sm text-white/80 font-normal mt-1">Detailed breakdown by client status and metrics</div>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <Tabs value={clientRecordTab} onValueChange={setClientRecordTab}>
+              <TabsList className="grid grid-cols-4 mb-6 h-auto p-2 bg-slate-100/80 backdrop-blur-sm rounded-xl">
+                <TabsTrigger value="new" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <UserPlus className="h-4 w-4" /> 
+                    <span className="font-semibold">New Clients</span>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-bold px-2 py-1">
+                    {processingResults.newClients?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="converted" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="h-4 w-4" /> 
+                    <span className="font-semibold">Converted</span>
+                  </div>
+                  <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-bold px-2 py-1">
+                    {processingResults.convertedClients?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="retained" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <RefreshCcw className="h-4 w-4" /> 
+                    <span className="font-semibold">Retained</span>
+                  </div>
+                  <Badge className="bg-teal-100 text-teal-700 border-teal-200 text-xs font-bold px-2 py-1">
+                    {processingResults.retainedClients?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="excluded" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <UserX className="h-4 w-4" /> 
+                    <span className="font-semibold">Excluded</span>
+                  </div>
+                  <Badge className="bg-red-100 text-red-700 border-red-200 text-xs font-bold px-2 py-1">
+                    {processingResults.excluded?.length || 0}
+                  </Badge>
+                </TabsTrigger>
+              </TabsList>
 
-          <div className="mb-4">
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input 
-                placeholder="Search clients..." 
-                className="pl-8" 
-                value={clientSearchTerm} 
-                onChange={e => setClientSearchTerm(e.target.value)} 
-                autoComplete="off" 
-              />
-            </div>
-          </div>
+              <div className="mb-6">
+                <div className="relative w-full max-w-md">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <Input 
+                    placeholder="Search clients by name, email, or location..." 
+                    className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-all duration-200" 
+                    value={clientSearchTerm} 
+                    onChange={e => setClientSearchTerm(e.target.value)} 
+                    autoComplete="off" 
+                  />
+                </div>
+              </div>
 
-          <TabsContent value="new">
-            {renderClientTable(processingResults.newClients || [], 'new')}
-          </TabsContent>
-          
-          <TabsContent value="converted">
-            {renderClientTable(processingResults.convertedClients || [], 'converted')}
-          </TabsContent>
-          
-          <TabsContent value="retained">
-            {renderClientTable(processingResults.retainedClients || [], 'retained')}
-          </TabsContent>
-          
-          <TabsContent value="excluded">
-            {renderClientTable(processingResults.excluded || [], 'excluded')}
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="new">
+                {renderClientTable(processingResults.newClients || [], 'new')}
+              </TabsContent>
+              
+              <TabsContent value="converted">
+                {renderClientTable(processingResults.convertedClients || [], 'converted')}
+              </TabsContent>
+              
+              <TabsContent value="retained">
+                {renderClientTable(processingResults.retainedClients || [], 'retained')}
+              </TabsContent>
+              
+              <TabsContent value="excluded">
+                {renderClientTable(processingResults.excluded || [], 'excluded')}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -399,88 +473,148 @@ const RawDataView: React.FC<RawDataProps> = ({
     });
 
     return (
-      <Card>
+      <Card className="bg-gradient-to-br from-white/90 to-slate-50/80 border border-slate-200/50 shadow-lg rounded-xl overflow-hidden">
         <CardContent className="p-0">
-          <Table maxHeight="400px">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>First Visit</TableHead>
-                <TableHead>Location</TableHead>
-                {type === 'converted' && <TableHead>First Purchase</TableHead>}
-                {type === 'converted' && <TableHead>Purchase Item</TableHead>}
-                {type === 'converted' && <TableHead>Value</TableHead>}
-                {type === 'retained' && <TableHead>Post-Trial Visit</TableHead>}
-                <TableHead>Reason/Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients.length > 0 ? filteredClients.map((client, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{formatClientName(client)}</TableCell>
-                  <TableCell>{getClientEmail(client)}</TableCell>
-                  <TableCell>{safeFormatDate(getFirstVisitDate(client), 'medium')}</TableCell>
-                  <TableCell>{getStudioLocation(client)}</TableCell>
-                  {type === 'converted' && <TableCell>{safeFormatDate(getFirstPurchaseDate(client), 'medium')}</TableCell>}
-                  {type === 'converted' && <TableCell>{client.item || client.Product || 'N/A'}</TableCell>}
-                  {type === 'converted' && <TableCell>{safeFormatCurrency(client.saleValue || client.Price)}</TableCell>}
-                  {type === 'retained' && <TableCell>{safeFormatDate(client.firstVisitPostTrial, 'medium')}</TableCell>}
-                  <TableCell>
-                    <Badge variant={type === 'excluded' ? 'destructive' : 'default'}>
-                      {client.reason || (type === 'excluded' ? 'Excluded' : 'Included')}
-                    </Badge>
-                  </TableCell>
+          <ScrollArea className="h-[400px]">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800">
+                  <TableHead className="text-white font-bold">Client Information</TableHead>
+                  <TableHead className="text-white font-bold">Contact</TableHead>
+                  <TableHead className="text-white font-bold">First Visit</TableHead>
+                  <TableHead className="text-white font-bold">Location</TableHead>
+                  {type === 'converted' && <TableHead className="text-white font-bold">First Purchase</TableHead>}
+                  {type === 'converted' && <TableHead className="text-white font-bold">Purchase Item</TableHead>}
+                  {type === 'converted' && <TableHead className="text-white font-bold">Value</TableHead>}
+                  {type === 'retained' && <TableHead className="text-white font-bold">Post-Trial Visit</TableHead>}
+                  <TableHead className="text-white font-bold">Status/Reason</TableHead>
                 </TableRow>
-              )) : (
-                <TableRow>
-                  <TableCell colSpan={type === 'converted' ? 8 : type === 'retained' ? 6 : 5} className="text-center py-4">
-                    No {type} clients found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredClients.length > 0 ? filteredClients.map((client, index) => (
+                  <TableRow key={index} className="hover:bg-slate-50/80 transition-all duration-200 border-b border-slate-100/50">
+                    <TableCell className="font-semibold text-slate-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                        {formatClientName(client)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-slate-600">{getClientEmail(client)}</TableCell>
+                    <TableCell className="text-slate-600">{safeFormatDate(getFirstVisitDate(client), 'medium')}</TableCell>
+                    <TableCell className="text-slate-600">{getStudioLocation(client)}</TableCell>
+                    {type === 'converted' && <TableCell className="text-slate-600">{safeFormatDate(getFirstPurchaseDate(client), 'medium')}</TableCell>}
+                    {type === 'converted' && <TableCell className="text-slate-600">{client.item || client.Product || 'N/A'}</TableCell>}
+                    {type === 'converted' && <TableCell className="font-semibold text-green-700">{safeFormatCurrency(client.saleValue || client.Price)}</TableCell>}
+                    {type === 'retained' && <TableCell className="text-slate-600">{safeFormatDate(client.firstVisitPostTrial, 'medium')}</TableCell>}
+                    <TableCell>
+                      <Badge 
+                        className={`${
+                          type === 'excluded' 
+                            ? 'bg-red-100 text-red-700 border-red-200' 
+                            : type === 'converted'
+                            ? 'bg-green-100 text-green-700 border-green-200'
+                            : type === 'retained'
+                            ? 'bg-teal-100 text-teal-700 border-teal-200'
+                            : 'bg-blue-100 text-blue-700 border-blue-200'
+                        } font-semibold`}
+                      >
+                        {client.reason || (
+                          type === 'excluded' ? 'Excluded' : 
+                          type === 'converted' ? 'Converted' : 
+                          type === 'retained' ? 'Retained' : 'Included'
+                        )}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={type === 'converted' ? 8 : type === 'retained' ? 6 : 5} className="text-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <Users className="h-8 w-8 text-slate-400" />
+                        <p className="text-slate-600 font-medium">No {type} clients found matching your search.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
     );
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <Card className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-white/20">
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+              <Database className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-2xl font-bold">
+                Raw Data Analysis
+                <Star className="h-5 w-5 text-blue-400 animate-pulse" />
+              </div>
+              <div className="text-sm text-white/80 font-normal mt-1">
+                Comprehensive view of uploaded data and processing results
+              </div>
+            </div>
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
-          <TabsTrigger value="processing" className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <span>Processing Analysis</span>
+        <TabsList className="grid grid-cols-4 mb-6 h-auto p-2 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40">
+          <TabsTrigger value="processing" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <span className="font-semibold">Processing Analysis</span>
+            </div>
           </TabsTrigger>
-          <TabsTrigger value="new" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>New Clients ({newClientData?.length || 0})</span>
+          <TabsTrigger value="new" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="font-semibold">New Clients</span>
+            </div>
+            <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-bold">
+              {newClientData?.length || 0}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="bookings" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Bookings ({bookingsData?.length || 0})</span>
+          <TabsTrigger value="bookings" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="font-semibold">Bookings</span>
+            </div>
+            <Badge className="bg-green-100 text-green-700 border-green-200 text-xs font-bold">
+              {bookingsData?.length || 0}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Payments ({paymentsData?.length || 0})</span>
+          <TabsTrigger value="payments" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="font-semibold">Payments</span>
+            </div>
+            <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs font-bold">
+              {paymentsData?.length || 0}
+            </Badge>
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="processing">
+        <TabsContent value="processing" className="animate-fade-in">
           {renderProcessingAnalysis()}
         </TabsContent>
         
-        <TabsContent value="new">
+        <TabsContent value="new" className="animate-fade-in">
           {renderDataTable(newClientData || [], 'New Client')}
         </TabsContent>
         
-        <TabsContent value="bookings">
+        <TabsContent value="bookings" className="animate-fade-in">
           {renderDataTable(bookingsData || [], 'Bookings')}
         </TabsContent>
         
-        <TabsContent value="payments">
+        <TabsContent value="payments" className="animate-fade-in">
           {renderDataTable(paymentsData || [], 'Payments')}
         </TabsContent>
       </Tabs>

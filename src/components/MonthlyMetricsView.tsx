@@ -4,16 +4,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ProcessedTeacherData } from '@/utils/dataProcessor';
-import { TrendingUp, Users, Calendar, Target, Award, DollarSign, BarChart3, PieChart, Activity, Zap, Sparkles, Crown, Star } from 'lucide-react';
+import { TrendingUp, Users, Calendar, Target, Award, DollarSign, BarChart3, PieChart, Activity, Zap, Sparkles, Crown, Star, CalendarDays } from 'lucide-react';
 import { safeToFixed, safeFormatCurrency } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import YearlyMetricsView from './YearlyMetricsView';
+
 interface MonthlyMetricsViewProps {
   data: ProcessedTeacherData[];
 }
-const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
-  data
-}) => {
+
+const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({ data }) => {
   const [selectedMetric, setSelectedMetric] = useState('visits');
+  const [viewType, setViewType] = useState('monthly');
 
   // Group data by teacher and month with proper null checks
   const monthlyData = useMemo(() => {
@@ -191,13 +193,16 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
     color: 'from-violet-500 to-purple-600',
     formatter: (value: number) => value.toLocaleString()
   }];
+
   const selectedMetricConfig = metrics.find(m => m.key === selectedMetric) || metrics[0];
 
-  // Render metric table
+  // Render metric table (enhanced styling)
   const renderMetricTable = () => {
     const totals = calculateTotals(selectedMetric);
     const totalSum = totals.reduce((sum, t) => sum + (t?.total || 0), 0);
-    return <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden rounded-2xl">
+
+    return (
+      <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden rounded-2xl">
         <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border-b border-white/20">
           <CardTitle className="flex items-center gap-3">
             <div className={`p-3 rounded-xl bg-gradient-to-r ${selectedMetricConfig.color} shadow-lg`}>
@@ -220,19 +225,21 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
           <ScrollArea className="h-[500px]">
             <Table>
               <TableHeader>
-                <TableRow className="">
-                  <TableHead className="text-white font-bold text-center min-w-[140px] px-4">
+                <TableRow>
+                  <TableHead className="text-white font-bold text-center min-w-[160px] px-6">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
                       Teacher
                     </div>
                   </TableHead>
-                  {allMonths.map(month => <TableHead key={month} className="text-white font-bold text-center min-w-[140px] px-4">
+                  {allMonths.map(month => (
+                    <TableHead key={month} className="text-white font-bold text-center min-w-[140px] px-4">
                       <div className="flex items-center justify-center gap-2">
                         <Calendar className="h-4 w-4" />
                         {month}
                       </div>
-                    </TableHead>)}
+                    </TableHead>
+                  ))}
                   <TableHead className="text-white font-bold text-center min-w-[140px] px-4">
                     <div className="flex items-center justify-center gap-2">
                       <Zap className="h-4 w-4" />
@@ -243,14 +250,18 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
               </TableHeader>
               <TableBody>
                 {teachers.map((teacher, index) => {
-                const teacherTotal = allMonths.reduce((sum, month) => {
-                  const teacherData = monthlyData[teacher];
-                  const monthData = teacherData && teacherData[month];
-                  return sum + (monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0);
-                }, 0);
-                return <TableRow key={teacher} className="animate-fade-in border-b border-slate-200/30 hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-white/90 transition-all duration-300" style={{
-                  animationDelay: `${index * 50}ms`
-                }}>
+                  const teacherTotal = allMonths.reduce((sum, month) => {
+                    const teacherData = monthlyData[teacher];
+                    const monthData = teacherData && teacherData[month];
+                    return sum + (monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0);
+                  }, 0);
+
+                  return (
+                    <TableRow 
+                      key={teacher} 
+                      className="animate-fade-in border-b border-slate-200/30 hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-white/90 transition-all duration-300" 
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <TableCell className="font-bold sticky left-0 z-10 bg-white/95 backdrop-blur-sm border-r border-slate-200/30 min-w-[180px] text-slate-800 px-6">
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${selectedMetricConfig.color} shadow-sm`}></div>
@@ -258,22 +269,25 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
                         </div>
                       </TableCell>
                       {allMonths.map(month => {
-                    const teacherData = monthlyData[teacher];
-                    const monthData = teacherData && teacherData[month];
-                    const value = monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0;
-                    return <TableCell key={month} className="text-center min-w-[140px] font-semibold text-slate-800 px-4">
+                        const teacherData = monthlyData[teacher];
+                        const monthData = teacherData && teacherData[month];
+                        const value = monthData && monthData[selectedMetric] ? monthData[selectedMetric] : 0;
+                        return (
+                          <TableCell key={month} className="text-center min-w-[140px] font-semibold text-slate-800 px-4">
                             <Badge className={`bg-gradient-to-r ${selectedMetricConfig.color} text-white shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1 font-bold`}>
                               {selectedMetricConfig.formatter(value)}
                             </Badge>
-                          </TableCell>;
-                  })}
+                          </TableCell>
+                        );
+                      })}
                       <TableCell className="text-center font-bold min-w-[140px] bg-slate-50/80 border-l border-slate-200/50 text-slate-800 sticky right-0 z-10">
                         <Badge className="bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg px-3 py-1 font-bold">
                           {selectedMetricConfig.formatter(teacherTotal)}
                         </Badge>
                       </TableCell>
-                    </TableRow>;
-              })}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
               <TableFooter>
                 <TableRow className="border-t-2 border-slate-300/50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
@@ -283,14 +297,13 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
                       <span className="font-bold">Total</span>
                     </div>
                   </TableCell>
-                  {totals.map(({
-                  month,
-                  total
-                }) => <TableCell key={month} className="text-center font-bold text-white min-w-[140px] px-4">
+                  {totals.map(({ month, total }) => (
+                    <TableCell key={month} className="text-center font-bold text-white min-w-[140px] px-4">
                       <span className="font-bold text-lg">
                         {selectedMetricConfig.formatter(total)}
                       </span>
-                    </TableCell>)}
+                    </TableCell>
+                  ))}
                   <TableCell className="text-center font-bold text-white min-w-[140px] bg-slate-600/20 border-l border-white/30 sticky right-0 z-20">
                     <span className="font-bold text-lg">
                       {selectedMetricConfig.formatter(totalSum)}
@@ -301,116 +314,145 @@ const MonthlyMetricsView: React.FC<MonthlyMetricsViewProps> = ({
             </Table>
           </ScrollArea>
         </CardContent>
-      </Card>;
+      </Card>
+    );
   };
 
   // Early return if no data
   if (!data || !Array.isArray(data) || data.length === 0) {
-    return <div className="space-y-6">
+    return (
+      <div className="space-y-6">
         <Card className="animate-fade-in bg-white/90 backdrop-blur-xl border border-white/40 shadow-luxury rounded-2xl">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">No data available for monthly metrics view.</p>
-          </CardContent>
-        </Card>
-      </div>;
-  }
-  return <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden">
-          <CardHeader className="pb-3 bg-gradient-to-r from-blue-100/80 to-blue-50/80 border-b border-blue-200/50">
-            <CardTitle className="text-sm flex items-center gap-2 text-blue-700">
-              <Activity className="h-4 w-4" />
-              Total Visits
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="text-3xl font-bold text-blue-800">{totalMetrics.totalVisits.toLocaleString()}</div>
-            <p className="text-xs text-blue-600 mt-1 font-medium">Across all teachers</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
-        animationDelay: '100ms'
-      }}>
-          <CardHeader className="pb-3 bg-gradient-to-r from-green-100/80 to-emerald-50/80 border-b border-green-200/50">
-            <CardTitle className="text-sm flex items-center gap-2 text-green-700">
-              <Users className="h-4 w-4" />
-              New Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="text-3xl font-bold text-green-800">{totalMetrics.totalNewMembers.toLocaleString()}</div>
-            <p className="text-xs text-green-600 mt-1 font-medium">New acquisitions</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
-        animationDelay: '200ms'
-      }}>
-          <CardHeader className="pb-3 bg-gradient-to-r from-purple-100/80 to-violet-50/80 border-b border-purple-200/50">
-            <CardTitle className="text-sm flex items-center gap-2 text-purple-700">
-              <Target className="h-4 w-4" />
-              Conversions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="text-3xl font-bold text-purple-800">{totalMetrics.totalConverted.toLocaleString()}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs font-bold">
-                <Star className="h-3 w-3 mr-1" />
-                {safeToFixed(totalMetrics.avgConversionRate, 1)}%
-              </Badge>
-              <span className="text-xs text-purple-600 font-medium">avg rate</span>
+          <CardContent className="p-12 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <Calendar className="h-12 w-12 text-slate-400" />
+              <p className="text-xl font-semibold text-slate-800">No data available for metrics view</p>
+              <p className="text-slate-600 max-w-md">
+                No data available for monthly/yearly metrics view. Please ensure you have uploaded valid data files.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200 shadow-luxury animate-fade-in rounded-2xl overflow-hidden" style={{
-        animationDelay: '300ms'
-      }}>
-          <CardHeader className="pb-3 bg-gradient-to-r from-amber-100/80 to-orange-50/80 border-b border-amber-200/50">
-            <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
-              <DollarSign className="h-4 w-4" />
-              Total Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="text-3xl font-bold text-amber-800">{safeFormatCurrency(totalMetrics.totalRevenue)}</div>
-            <p className="text-xs text-amber-600 mt-1 font-medium">Generated revenue</p>
           </CardContent>
         </Card>
       </div>
+    );
+  }
 
-      {/* Metric Selector */}
-      <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-slate-50/80 to-white/80 border-b border-white/20">
-          <CardTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-400/30">
-              <BarChart3 className="h-5 w-5 text-primary" />
-            </div>
-            <span className="bg-gradient-to-r from-slate-700 to-slate-800 bg-clip-text text-transparent font-bold text-xl">
-              Monthly Metrics Analysis
-            </span>
-            <Sparkles className="h-5 w-5 text-blue-500 animate-pulse" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
-            <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2 bg-slate-100/80 backdrop-blur-sm rounded-xl">
-              {metrics.map(metric => <TabsTrigger key={metric.key} value={metric.key} className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg hover:bg-white/80">
-                  <div className={`p-2 rounded-lg bg-gradient-to-r ${metric.color} text-white shadow-md`}>
-                    {metric.icon}
-                  </div>
-                  <span className="text-xs font-bold text-center leading-tight">{metric.label}</span>
-                </TabsTrigger>)}
-            </TabsList>
-          </Tabs>
-        </CardContent>
-      </Card>
+  return (
+    <div className="space-y-6">
+      {/* View Type Selector */}
+      <Tabs value={viewType} onValueChange={setViewType} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-6 h-auto p-2 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/40">
+          <TabsTrigger value="monthly" className="flex items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <Calendar className="h-4 w-4" />
+            <span className="font-semibold">Monthly Analysis</span>
+          </TabsTrigger>
+          <TabsTrigger value="yearly" className="flex items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-xl">
+            <CalendarDays className="h-4 w-4" />
+            <span className="font-semibold">Yearly Analysis</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Monthly Metrics Table */}
-      {renderMetricTable()}
-    </div>;
+        <TabsContent value="monthly" className="animate-fade-in">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-transparent border border-blue-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-gradient-to-r from-blue-100/80 to-blue-50/80 border-b border-blue-200/50">
+                <CardTitle className="text-sm flex items-center gap-2 text-blue-700">
+                  <Activity className="h-4 w-4" />
+                  Total Visits
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="text-3xl font-bold text-blue-800">{totalMetrics.totalVisits.toLocaleString()}</div>
+                <p className="text-xs text-blue-600 mt-1 font-medium">Across all teachers</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-500/10 via-emerald-600/5 to-transparent border border-green-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-gradient-to-r from-green-100/80 to-emerald-50/80 border-b border-green-200/50">
+                <CardTitle className="text-sm flex items-center gap-2 text-green-700">
+                  <Users className="h-4 w-4" />
+                  New Members
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="text-3xl font-bold text-green-800">{totalMetrics.totalNewMembers.toLocaleString()}</div>
+                <p className="text-xs text-green-600 mt-1 font-medium">New acquisitions</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-500/10 via-violet-600/5 to-transparent border border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-gradient-to-r from-purple-100/80 to-violet-50/80 border-b border-purple-200/50">
+                <CardTitle className="text-sm flex items-center gap-2 text-purple-700">
+                  <Target className="h-4 w-4" />
+                  Conversions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="text-3xl font-bold text-purple-800">{totalMetrics.totalConverted.toLocaleString()}</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs font-bold">
+                    <Star className="h-3 w-3 mr-1" />
+                    {safeToFixed(totalMetrics.avgConversionRate, 1)}%
+                  </Badge>
+                  <span className="text-xs text-purple-600 font-medium">avg rate</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-amber-500/10 via-orange-600/5 to-transparent border border-amber-200/50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-3 bg-gradient-to-r from-amber-100/80 to-orange-50/80 border-b border-amber-200/50">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-700">
+                  <DollarSign className="h-4 w-4" />
+                  Total Revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="text-3xl font-bold text-amber-800">{safeFormatCurrency(totalMetrics.totalRevenue)}</div>
+                <p className="text-xs text-amber-600 mt-1 font-medium">Generated revenue</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Metric Selector */}
+          <Card className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden mb-6">
+            <CardHeader className="bg-gradient-to-r from-slate-50/80 to-white/80 border-b border-white/20">
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-400/30">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
+                <span className="bg-gradient-to-r from-slate-700 to-slate-800 bg-clip-text text-transparent font-bold text-xl">
+                  Monthly Metrics Analysis
+                </span>
+                <Sparkles className="h-5 w-5 text-blue-500 animate-pulse" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
+                <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2 bg-slate-100/80 backdrop-blur-sm rounded-xl">
+                  {metrics.map(metric => (
+                    <TabsTrigger key={metric.key} value={metric.key} className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all duration-200 rounded-lg hover:bg-white/80">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${metric.color} text-white shadow-md`}>
+                        {metric.icon}
+                      </div>
+                      <span className="text-xs font-bold text-center leading-tight">{metric.label}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Metrics Table */}
+          {renderMetricTable()}
+        </TabsContent>
+
+        <TabsContent value="yearly" className="animate-fade-in">
+          <YearlyMetricsView data={data} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 };
+
 export default MonthlyMetricsView;
